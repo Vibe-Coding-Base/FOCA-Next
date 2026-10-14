@@ -2,10 +2,12 @@ name: CI
 
 on:
   push:
+    branches: ['**']
   pull_request:
 
 jobs:
   build:
+    name: Build & test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -16,12 +18,19 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      # On Windows this also builds the WinForms application and its tests
+
+      # On Windows this also builds FOCA Classic and its tests
       - name: Build and test
         shell: pwsh
         run: ./build.ps1 -Configuration Release
+
+      # The build already fails on vulnerable packages (NuGetAudit as error); this records a report
       - name: Vulnerable package audit
         shell: pwsh
         run: |
-          dotnet list Foca.sln package --vulnerable --include-transitive | Tee-Object audit.txt
-          if (Select-String -Path audit.txt -Pattern '\b(High|Critical)\b' -Quiet) { throw 'Vulnerable packages found' }
+          dotnet restore Foca.slnx
+          dotnet list Foca.slnx package --vulnerable --include-transitive | Tee-Object audit.txt
+          if (Select-String -Path audit.txt -Pattern '> .*\b(High|Critical|Moderate)\b' -Quiet) {
+            Get-Content audit.txt
+            throw 'Vulnerable packages found'
+          }

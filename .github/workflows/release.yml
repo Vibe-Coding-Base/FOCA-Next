@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag such as v4.0.0 to build self-contained packages for every platform and attach them to a draft release.
+# Push a tag such as v1.0.0 to build self-contained packages for every platform and publish a release.
 on:
   push:
     tags: ['v*']
@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   package:
+    name: Package (${{ matrix.os }})
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -25,21 +27,48 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+
       - name: Test
         shell: pwsh
         run: ./build.ps1 -Configuration Release -SkipLegacy
+
       - name: Package
         shell: pwsh
-        run: ./publish.ps1 -Runtime ('${{ matrix.runtimes }}' -split ',') -Version ('${{ github.ref_name }}'.TrimStart('v'))
-      # macOS: Gatekeeper blocks unsigned apps downloaded from the internet. Signing and notarisation need an
-      # Apple Developer ID; add the certificate as a secret and run codesign/notarytool here before release.
+        run: ./build/publish.ps1 -Runtime ('${{ matrix.runtimes }}' -split ',') -Version ('${{ github.ref_name }}'.TrimStart('v'))
+
+      # macOS: Gatekeeper blocks unsigned apps downloaded from the internet. Signing and notarisation
+      # need an Apple Developer ID; add it as a secret and run codesign/notarytool here before release.
+
       - name: Rename checksums per runner
         shell: pwsh
         run: Move-Item artifacts/SHA256SUMS "artifacts/SHA256SUMS-${{ matrix.os }}"
-      - uses: softprops/action-gh-release@v2
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          draft: true
-          files: |
+          name: packages-${{ matrix.os }}
+          path: |
             artifacts/*.zip
             artifacts/*.tar.gz
             artifacts/SHA256SUMS-*
+
+  release:
+    name: Publish release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Combine checksums
+        run: cat artifacts/SHA256SUMS-* > artifacts/SHA256SUMS 2>/dev/null || true
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            artifacts/*.zip
+            artifacts/*.tar.gz
+            artifacts/SHA256SUMS
