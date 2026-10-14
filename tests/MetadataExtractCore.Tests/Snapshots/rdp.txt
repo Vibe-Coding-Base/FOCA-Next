@@ -1,0 +1,6 @@
+User: ACME\judy.admin
+Path: C:\Program Files\Microsoft Office\Office16\
+Path: C:\Users\judy.admin\
+Server: rdgw.acme.local
+Server: ts01.acme.local
+Application: Microsoft Office

@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build and test
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release
+      - name: Vulnerable package audit
+        shell: pwsh
+        run: |
+          dotnet list tests/MetadataExtractCore.Tests/MetadataExtractCore.Tests.csproj package --vulnerable --include-transitive

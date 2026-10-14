@@ -1,0 +1,3 @@
+Model: Canon EOS 5D
+User: exif.photographer
+Application: Adobe Photoshop CS6
