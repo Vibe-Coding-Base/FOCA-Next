@@ -73,11 +73,34 @@ namespace FOCA
         }
 
         /// <summary>
+        ///     True when the project analyses local documents without a domain under reconnaissance.
+        /// </summary>
+        public bool DocumentAnalysisMode
+        {
+            set
+            {
+                rbModeDocuments.Checked = value;
+                rbModeDomain.Checked = !value;
+            }
+            get { return rbModeDocuments.Checked; }
+        }
+
+        private void rbMode_CheckedChanged(object sender, EventArgs e)
+        {
+            bool domainMode = !DocumentAnalysisMode;
+            txtDomainWebsite.Enabled = txtAlternativeDomains.Enabled = domainMode;
+            lblSiteDomain.Text = domainMode ? "Domain website" : "Domain website (add later)";
+            if (!domainMode)
+                errorPorject.SetError(txtDomainWebsite, string.Empty);
+        }
+
+        /// <summary>
         ///     Clear form fields
         /// </summary>
         public void ClearFields()
         {
             ProjectName = Project.DefaultProjectName;
+            DocumentAnalysisMode = false;
             DomainWebsite = string.Empty;
             AlternativeDomains = string.Empty;
             FolderDocuments = System.IO.Path.GetTempPath();
@@ -95,6 +118,7 @@ namespace FOCA
         {
             cmbProject.SelectedItem = project;
             ProjectName = project.ProjectName;
+            DocumentAnalysisMode = !project.HasDomain;
             DomainWebsite = project.Domain;
             AlternativeDomains = string.Empty;
             foreach (var str in project.AlternativeDomains)
@@ -119,12 +143,16 @@ namespace FOCA
             var failure = !CheckDownloadDirectory();
             if (failure) return;
 
+            // The same button creates new projects and updates the selected one ("Update" caption)
+            bool isNewProject = Program.data.Project.Id == 0;
+            bool documentAnalysis = DocumentAnalysisMode;
             Program.data.Project.ProjectName = ProjectName;
             Program.data.Project.ProjectState = Project.ProjectStates.InitializedUnsave;
-            Program.data.Project.Domain = DomainWebsite.ToLower();
+            Program.data.Project.Domain = documentAnalysis ? string.Empty : DomainWebsite.Trim().ToLower();
             Program.data.Project.AlternativeDomains.Clear();
-            Program.data.Project.AlternativeDomains.AddRange(AlternativeDomains.Split(new[] { Environment.NewLine },
-                StringSplitOptions.RemoveEmptyEntries));
+            if (!documentAnalysis)
+                Program.data.Project.AlternativeDomains.AddRange(AlternativeDomains.Split(new[] { Environment.NewLine },
+                    StringSplitOptions.RemoveEmptyEntries));
             Program.data.Project.ProjectDate = txtDate.Value;
             Program.data.Project.ProjectNotes = Notes;
             Program.data.Project.ProjectSaveFile = string.Empty;
@@ -145,6 +173,10 @@ namespace FOCA
             {
                 Program.FormMainInstance.Reset();
                 UpdateGUI.Reset();
+            }
+            else if (documentAnalysis && isNewProject)
+            {
+                Program.FormMainInstance.panelMetadataSearch.ImportDocumentsFolder();
             }
         }
 
@@ -256,6 +288,7 @@ namespace FOCA
             txtFolderDocuments.Text = project.FolderToDownload;
             txtDate.Value = project.ProjectDate;
             txtNotes.Text = project.ProjectNotes;
+            DocumentAnalysisMode = !project.HasDomain;
             txtDomainWebsite.Text = project.Domain;
             SetAlternativeDomains(project.AlternativeDomains);
 
@@ -284,9 +317,9 @@ namespace FOCA
                 errorPorject.SetError(txtProjectName, "Value is required."); result = true;
             }
 
-            if (string.IsNullOrEmpty(txtDomainWebsite.Text))
+            if (!DocumentAnalysisMode && string.IsNullOrWhiteSpace(txtDomainWebsite.Text))
             {
-                errorPorject.SetError(txtDomainWebsite, "Value is required."); result = true;
+                errorPorject.SetError(txtDomainWebsite, "Value is required, or choose the document analysis mode."); result = true;
             }
 
             if (string.IsNullOrEmpty(txtFolderDocuments.Text))

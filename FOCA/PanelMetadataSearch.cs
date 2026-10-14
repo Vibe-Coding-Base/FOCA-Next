@@ -363,12 +363,50 @@ namespace FOCA
         private void toolStripMenuItemAddFolder_Click(object sender, EventArgs e)
         {
             if (fbdMain.ShowDialog() != DialogResult.OK) return;
-            var files = Directory.GetFiles(fbdMain.SelectedPath);
-            var lvcs = (ListViewColumnSorter)listViewDocuments.ListViewItemSorter;
-            listViewDocuments.ListViewItemSorter = null;
-            foreach (var file in files)
-                AddFile(file);
-            listViewDocuments.ListViewItemSorter = lvcs;
+            AddFolder(fbdMain.SelectedPath, AskIncludeSubfolders(fbdMain.SelectedPath));
+        }
+
+        /// <summary>
+        ///     Entry point of document analysis projects: pick a folder, add its documents and
+        ///     optionally extract their metadata straight away.
+        /// </summary>
+        public void ImportDocumentsFolder()
+        {
+            string previousDescription = fbdMain.Description;
+            fbdMain.Description = "Select the folder with the documents to analyze";
+            DialogResult folderChoice = fbdMain.ShowDialog();
+            fbdMain.Description = previousDescription;
+            if (folderChoice != DialogResult.OK) return;
+
+            int added = AddFolder(fbdMain.SelectedPath, AskIncludeSubfolders(fbdMain.SelectedPath));
+            if (added == 0)
+            {
+                MessageBox.Show($"No supported documents were found in {fbdMain.SelectedPath}.", "Add folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (MessageBox.Show($"{added} documents added. Extract their metadata now?", "Add folder",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                LaunchMetadataExtractorThread(listViewDocuments.Items.Cast<ListViewItem>().ToList());
+            }
+        }
+
+        /// <summary>
+        ///     Asks whether subfolders should be scanned, only when the folder has any.
+        /// </summary>
+        public static bool AskIncludeSubfolders(string folder)
+        {
+            bool hasSubfolders;
+            try
+            {
+                hasSubfolders = Directory.EnumerateDirectories(folder).Any();
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException || e is IOException)
+            {
+                hasSubfolders = false;
+            }
+            return hasSubfolders && MessageBox.Show($"Include documents in the subfolders of {folder}?", "Add folder",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
         }
 
         /// <summary>
@@ -414,27 +452,32 @@ namespace FOCA
         ///     A file locally added is tagged with the "Downloaded" attribute as true
         /// </summary>
         /// <param name="path"></param>
-        public void AddFile(string path)
+        /// <param name="skipUnsupported">When true, files whose type is neither a supported extension nor detectable from content are ignored.</param>
+        /// <returns>True if the file was added.</returns>
+        public bool AddFile(string path, bool skipUnsupported = false)
         {
             try
             {
                 string extension = System.IO.Path.GetExtension(path)?.ToLower();
                 if (extension == null)
-                    return;
+                    return false;
                 // verify that it's a well-known extension, if not, guess filetype
                 if (!DocumentExtractor.IsSupportedExtension(extension))
                 {
+                    string detected;
                     using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
-                        extension = MetadataExtractCore.Utilities.Functions.GetFormatFile(fs);
+                        detected = MetadataExtractCore.Utilities.Functions.GetFormatFile(fs);
                     }
-                    if (!String.IsNullOrWhiteSpace(extension))
+                    if (!String.IsNullOrWhiteSpace(detected))
                     {
-                        Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"Unknown extension {path}, found filetype {extension}", Log.LogType.medium));
-                        string newFile = GetNotExistsPath(path + extension);
-                        File.Move(path, newFile);
-                        Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"File moved {path} to {newFile}", Log.LogType.medium));
-                        path = newFile;
+                        // Local files belong to the user: record the detected type instead of renaming the file.
+                        Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"Unknown extension {path}, found filetype {detected}", Log.LogType.medium));
+                        extension = detected;
+                    }
+                    else if (skipUnsupported)
+                    {
+                        return false;
                     }
                 }
                 FilesItem fi = new FilesItem
@@ -459,10 +502,67 @@ namespace FOCA
                 }));
 
                 Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"Added document {fi.Path}", Log.LogType.debug));
+                return true;
             }
             catch (Exception e)
             {
                 Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"The file {path} could not be added: {e.ToString()}", Log.LogType.debug));
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     Adds every supported document under <paramref name="folder"/> to the project.
+        /// </summary>
+        /// <returns>Number of documents added.</returns>
+        public int AddFolder(string folder, bool includeSubfolders)
+        {
+            var lvcs = (ListViewColumnSorter)listViewDocuments.ListViewItemSorter;
+            listViewDocuments.ListViewItemSorter = null;
+            int added = 0;
+            try
+            {
+                foreach (string file in EnumerateFilesSafe(folder, includeSubfolders))
+                {
+                    if (Program.data.files.Items.Any(f => String.Equals(f.Path, file, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+                    if (AddFile(file, skipUnsupported: true))
+                        added++;
+                }
+            }
+            finally
+            {
+                listViewDocuments.ListViewItemSorter = lvcs;
+            }
+            Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"Added {added} documents from {folder}", Log.LogType.medium));
+            return added;
+        }
+
+        /// <summary>
+        ///     Walks a folder tree skipping directories that cannot be read instead of aborting the whole walk.
+        /// </summary>
+        private static IEnumerable<string> EnumerateFilesSafe(string root, bool recursive)
+        {
+            var pending = new Stack<string>();
+            pending.Push(root);
+            while (pending.Count > 0)
+            {
+                string dir = pending.Pop();
+                string[] files;
+                try
+                {
+                    files = Directory.GetFiles(dir);
+                    if (recursive)
+                        foreach (string sub in Directory.GetDirectories(dir))
+                            pending.Push(sub);
+                }
+                catch (Exception e) when (e is UnauthorizedAccessException || e is IOException)
+                {
+                    Program.LogThis(new Log(Log.ModuleType.MetadataSearch, $"Skipping folder {dir}: {e.Message}", Log.LogType.debug));
+                    continue;
+                }
+                foreach (string file in files)
+                    yield return file;
             }
         }
 
@@ -669,6 +769,10 @@ namespace FOCA
                 {
                     this.searchCancelToken?.Cancel();
                     Program.LogThis(new Log(Log.ModuleType.MetadataSearch, "Stopping documents search", Log.LogType.debug));
+                }
+                else if (!Program.data.Project.HasDomain)
+                {
+                    MessageBox.Show(Project.DomainRequiredMessage, @"Domain required", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else if (!chkGoogle.Checked && !chkBing.Checked && !chkDuck.Checked)
                 {
@@ -1454,12 +1558,9 @@ namespace FOCA
                         {
                             // add it only if the 'server' variable matches the current domain or it's alternative domains
                             var found = false;
-                            if (Program.data.Project.Domain != null)
-                            {
-                                if (Program.data.Project.AlternativeDomains.Any(y => y.Contains(server)) ||
-                                    server.Contains(Program.data.Project.Domain))
-                                    found = true;
-                            }
+                            if (Program.data.Project.AlternativeDomains.Any(y => y.Contains(server)) ||
+                                (Program.data.Project.HasDomain && server.Contains(Program.data.Project.Domain)))
+                                found = true;
 
                             IPAddress ipAddress;
                             // if it's an IP address, it must be added to the list

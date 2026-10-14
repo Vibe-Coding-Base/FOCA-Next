@@ -186,7 +186,7 @@ namespace FOCA.GUI
                                     bool found = false;
                                     foreach (RelationsItem relation in Program.data.relations.Items.Where(S => S.Ip.Ip == strIP))
                                     {
-                                        if (relation.Domain.Domain.Contains(Program.data.Project.Domain))
+                                        if (Program.data.Project.HasDomain && relation.Domain.Domain.Contains(Program.data.Project.Domain))
                                         {
                                             found = true;
                                             break;
@@ -524,7 +524,7 @@ namespace FOCA.GUI
                                     }
                                     else
                                     {
-                                        if ((!mainDomain.Contains(Program.data.Project.Domain)) &&
+                                        if ((!Program.data.Project.HasDomain || !mainDomain.Contains(Program.data.Project.Domain)) &&
                                             (!Program.data.Project.AlternativeDomains.Contains(mainDomain))) continue;
                                         tnDomain = tnDomain.Nodes.Insert(Program.FormMainInstance.SearchTextInNodes(tnDomain.Nodes, mainDomain), mainDomain, mainDomain);
                                         tnDomain.ContextMenuStrip = Program.FormMainInstance.contextMenu;

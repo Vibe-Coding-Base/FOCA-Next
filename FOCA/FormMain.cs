@@ -500,6 +500,13 @@ namespace FOCA
 
             panelProject.Visible = false;
 
+            if (!Program.data.Project.HasDomain)
+            {
+                // Document analysis project: there is no site to search, documents come from local files and folders
+                LoadSearchGui(string.Empty, true);
+                return;
+            }
+
             var sb = new StringBuilder("site:" + Program.data.Project.Domain);
             sb.Append(" (");
 

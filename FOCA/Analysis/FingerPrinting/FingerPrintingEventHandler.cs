@@ -28,7 +28,9 @@ namespace FOCA.Analysis.FingerPrinting
                 //Solo se hace fingerPrinting a los dominios principales y alternativos
                 List<string> mainDomains = new List<string>();
 
-                mainDomains.Add(Program.data.Project.Domain);
+                // Document analysis projects have no main domain; an empty entry would match every host
+                if (Program.data.Project.HasDomain)
+                    mainDomains.Add(Program.data.Project.Domain);
                 mainDomains.AddRange(Program.data.Project.AlternativeDomains);
                 if (!mainDomains.Any(D => domain.Domain.EndsWith(D)))
                     return;

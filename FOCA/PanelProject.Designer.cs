@@ -54,6 +54,9 @@ namespace FOCA
             this.fbdMain = new System.Windows.Forms.FolderBrowserDialog();
             this.errorPorject = new System.Windows.Forms.ErrorProvider(this.components);
             this.openFileDialogImport = new System.Windows.Forms.OpenFileDialog();
+            this.lblProjectMode = new System.Windows.Forms.Label();
+            this.rbModeDomain = new System.Windows.Forms.RadioButton();
+            this.rbModeDocuments = new System.Windows.Forms.RadioButton();
             this.panelCenter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picFOCA)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorPorject)).BeginInit();
@@ -62,6 +65,9 @@ namespace FOCA
             // panelCenter
             // 
             this.panelCenter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.panelCenter.Controls.Add(this.lblProjectMode);
+            this.panelCenter.Controls.Add(this.rbModeDomain);
+            this.panelCenter.Controls.Add(this.rbModeDocuments);
             this.panelCenter.Controls.Add(this.btnImport);
             this.panelCenter.Controls.Add(this.btnExport);
             this.panelCenter.Controls.Add(this.cmbProject);
@@ -255,9 +261,48 @@ namespace FOCA
             this.txtFolderDocuments.Name = "txtFolderDocuments";
             this.txtFolderDocuments.Size = new System.Drawing.Size(278, 26);
             this.txtFolderDocuments.TabIndex = 4;
-            // 
+            //
+            // lblProjectMode
+            //
+            this.lblProjectMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblProjectMode.AutoSize = true;
+            this.lblProjectMode.Location = new System.Drawing.Point(420, 82);
+            this.lblProjectMode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblProjectMode.Name = "lblProjectMode";
+            this.lblProjectMode.Size = new System.Drawing.Size(102, 20);
+            this.lblProjectMode.TabIndex = 95;
+            this.lblProjectMode.Text = "Project mode";
+            //
+            // rbModeDomain
+            //
+            this.rbModeDomain.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.rbModeDomain.AutoSize = true;
+            this.rbModeDomain.Checked = true;
+            this.rbModeDomain.Location = new System.Drawing.Point(540, 80);
+            this.rbModeDomain.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.rbModeDomain.Name = "rbModeDomain";
+            this.rbModeDomain.Size = new System.Drawing.Size(207, 24);
+            this.rbModeDomain.TabIndex = 96;
+            this.rbModeDomain.TabStop = true;
+            this.rbModeDomain.Text = "Domain reconnaissance";
+            this.rbModeDomain.UseVisualStyleBackColor = true;
+            this.rbModeDomain.CheckedChanged += new System.EventHandler(this.rbMode_CheckedChanged);
+            //
+            // rbModeDocuments
+            //
+            this.rbModeDocuments.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.rbModeDocuments.AutoSize = true;
+            this.rbModeDocuments.Location = new System.Drawing.Point(540, 112);
+            this.rbModeDocuments.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.rbModeDocuments.Name = "rbModeDocuments";
+            this.rbModeDocuments.Size = new System.Drawing.Size(314, 24);
+            this.rbModeDocuments.TabIndex = 97;
+            this.rbModeDocuments.Text = "Document analysis (domain optional)";
+            this.rbModeDocuments.UseVisualStyleBackColor = true;
+            this.rbModeDocuments.CheckedChanged += new System.EventHandler(this.rbMode_CheckedChanged);
+            //
             // lblSiteDomain
-            // 
+            //
             this.lblSiteDomain.AutoSize = true;
             this.lblSiteDomain.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.lblSiteDomain.Location = new System.Drawing.Point(14, 265);
@@ -380,5 +425,8 @@ namespace FOCA
         private System.Windows.Forms.Button btnImport;
         private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.OpenFileDialog openFileDialogImport;
+        private System.Windows.Forms.Label lblProjectMode;
+        private System.Windows.Forms.RadioButton rbModeDomain;
+        private System.Windows.Forms.RadioButton rbModeDocuments;
     }
 }

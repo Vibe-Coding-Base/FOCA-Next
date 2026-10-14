@@ -114,10 +114,8 @@ namespace FOCA.GUI
             var tsiNewProject = new ToolStripMenuItem("&New project") { Image = Resources.report_add };
             var tsiSave = new ToolStripMenuItem("&Save project") { Image = Resources.save };
 
-            if (string.IsNullOrEmpty(Program.data.Project.Domain))
-                tsiSave.Enabled = false;
-            else
-                tsiSave.Enabled = true;
+            // Document analysis projects have no domain but can still be saved
+            tsiSave.Enabled = Program.data.Project.ProjectState != FOCA.Database.Entities.Project.ProjectStates.Uninitialized;
 
             tsiNewProject.Click += delegate { Program.FormMainInstance.LoadProjectGui(true); };
 
@@ -899,6 +897,11 @@ namespace FOCA.GUI
 
             tsiAddFromDNSDumpster.Click += delegate
             {
+                if (!Program.data.Project.HasDomain)
+                {
+                    MessageBox.Show(FOCA.Database.Entities.Project.DomainRequiredMessage, "Domain required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
                 ICollection<string> subs = DNSDumpsterParser.GetSubdomains(Program.data.Project.Domain);
                 foreach (
                     var t in

@@ -13,6 +13,9 @@ namespace FOCA.Database.Entities
         [NonSerialized]
         public const string DefaultProjectName = "Project Name";
 
+        public const string DomainRequiredMessage =
+            "This is a document analysis project without a domain. Add a domain in the project properties to use web search and DNS reconnaissance.";
+
         public int Id { get; set; }
 
         public enum ProjectStates { Uninitialized, InitializedUnsave, InitializedSave };
@@ -23,7 +26,15 @@ namespace FOCA.Database.Entities
 
         public ProjectStates ProjectState { get; set; }
 
+        /// <summary>
+        /// Main domain under reconnaissance. Empty for document analysis projects, which work on
+        /// local documents and folders; a domain can be set later from the project properties.
+        /// </summary>
         public string Domain { get; set; }
+
+        /// <summary>False for document analysis projects. Get-only, so Entity Framework does not map it.</summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public bool HasDomain => !String.IsNullOrWhiteSpace(Domain);
 
         public List<string> AlternativeDomains { get; set; }
 

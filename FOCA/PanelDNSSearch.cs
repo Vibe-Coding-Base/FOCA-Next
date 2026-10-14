@@ -95,6 +95,11 @@ namespace FOCA
         {
             if (buttonStart.Text == "&Start")
             {
+                if (!Program.data.Project.HasDomain)
+                {
+                    MessageBox.Show(Database.Entities.Project.DomainRequiredMessage, @"Domain required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
                 if (cbDictionarySearch.Checked)
                 {
                     if (string.IsNullOrEmpty(textBoxCommonNames.Text) == false && !File.Exists(textBoxCommonNames.Text))

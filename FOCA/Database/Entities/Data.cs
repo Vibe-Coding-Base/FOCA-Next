@@ -483,7 +483,7 @@ namespace FOCA.Database.Entities
 
                             if (Program.data.Project.LstNetRange.Count == 0)
                             {
-                                if (Program.data.Project.Domain != null)
+                                if (Program.data.Project.HasDomain)
                                 {
                                     if (!IsMainDomainOrAlternative(host))
                                     {
@@ -676,30 +676,29 @@ namespace FOCA.Database.Entities
         /// <returns></returns>
         public bool IsDomainOrAlternative(string dom)
         {
-            if (Program.data.Project.Domain == null)
+            if (String.IsNullOrEmpty(dom))
                 return false;
 
             if (Program.data.Project.Domain == "*")
                 return true;
 
-            if (dom.EndsWith(Program.data.Project.Domain))
-            {
-                if (dom.Length == Program.data.Project.Domain.Length)
-                    return true;//dominio.com
+            // Document analysis projects have no main domain but may still define alternative domains.
+            return IsSameOrSubdomain(dom, Program.data.Project.Domain)
+                || Program.data.Project.AlternativeDomains.Any(alternative => IsSameOrSubdomain(dom, alternative));
+        }
 
-                if (dom.EndsWith("." + Program.data.Project.Domain))
-                    return true;
-            }
+        /// <summary>
+        /// True when <paramref name="host"/> is <paramref name="domain"/> or one of its subdomains
+        /// ("www.acme.com" for "acme.com", but not "notacme.com"). An empty domain matches nothing.
+        /// </summary>
+        public static bool IsSameOrSubdomain(string host, string domain)
+        {
+            if (String.IsNullOrWhiteSpace(host) || String.IsNullOrWhiteSpace(domain))
+                return false;
 
-            foreach (var alternativo in Project.AlternativeDomains)
-            {
-                if (dom.Length == alternativo.Length)
-                    return true;//dominio.com
-
-                if (dom.EndsWith("." + alternativo))
-                    return true;
-            }
-            return false;
+            domain = domain.Trim();
+            return host.Equals(domain, StringComparison.OrdinalIgnoreCase)
+                || host.EndsWith("." + domain, StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetIpSource(string ip)
@@ -863,19 +862,7 @@ namespace FOCA.Database.Entities
 
         public bool IsMainDomainOrAlternative(string host)
         {
-            if (Program.data.Project.Domain == null)
-                return false;
-
-            if (Program.data.Project.Domain == "*")
-                return true;
-
-            if (((Program.data.Project.Domain != null) && (host.EndsWith("." + Program.data.Project.Domain) || Program.data.Project.Domain == host) ||
-                            Program.data.Project.AlternativeDomains.Where<string>(D => host.EndsWith(D)).Count() > 0))
-            {
-                return true;
-            }
-
-            return false;
+            return IsDomainOrAlternative(host);
         }
 
         protected void OnChangeEvent(EventArgs e)

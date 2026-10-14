@@ -482,7 +482,7 @@ namespace FOCA.Analysis.FingerPrinting
 
             if (!aux_certName.Contains("*"))
             {
-                if (aux_certName.EndsWith("." + Program.data.Project.Domain))
+                if (Program.data.Project.HasDomain && aux_certName.EndsWith("." + Program.data.Project.Domain))
                 {
                     Program.data.AddDomain(aux_certName, "Certificate FingerPrinting", 1, Program.cfgCurrent);
                 }
