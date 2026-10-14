@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Foca.Core.Model;
 
@@ -38,14 +39,16 @@ public sealed partial class NavigationNode : ObservableObject
         FindingKind = findingKind;
     }
 
-    public string Icon => Kind switch
+    /// <summary>The original FOCA icon for this node.</summary>
+    public Bitmap? Icon => AppIcons.Get(Kind switch
     {
-        NodeKind.Project => "🌐",
-        NodeKind.Network => "🖧",
-        NodeKind.Domains => "🔗",
-        NodeKind.DocumentAnalysis => "📂",
-        NodeKind.Files => "📄",
-        NodeKind.MetadataSummary => "🗂",
-        _ => "•",
-    };
+        NodeKind.Project => "project",
+        NodeKind.Network => "network",
+        NodeKind.Domains => "domains",
+        NodeKind.DocumentAnalysis => "documents",
+        NodeKind.Files => "documents",
+        NodeKind.MetadataSummary => "metadata",
+        NodeKind.SummaryKind when FindingKind.HasValue => AppIcons.NameFor(FindingKind.Value),
+        _ => "metadata",
+    });
 }

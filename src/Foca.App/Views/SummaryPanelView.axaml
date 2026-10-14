@@ -10,7 +10,16 @@
     </Grid>
     <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="All">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="110" />
+        <DataGridTemplateColumn Header="Type" Width="130">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:SummaryRow">
+              <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" Margin="6,0,0,0">
+                <Image Source="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Kind}" VerticalAlignment="Center" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
         <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="2*" />
         <DataGridTextColumn Header="Documents" Binding="{Binding Documents}" Width="90" />
         <DataGridTextColumn Header="Variants" Binding="{Binding Variants}" Width="*" />

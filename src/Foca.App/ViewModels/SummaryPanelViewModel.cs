@@ -13,6 +13,7 @@ public sealed class SummaryRow
     }
 
     public SummaryEntry Entry { get; }
+    public Avalonia.Media.Imaging.Bitmap? Icon => AppIcons.For(Entry.Kind);
     public string Kind => Entry.Kind.ToString();
     public string Value => Entry.Value;
     public int Documents => Entry.DocumentCount;

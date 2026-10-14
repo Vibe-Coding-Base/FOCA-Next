@@ -87,8 +87,8 @@
               <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:NavigationNode">
                   <StackPanel Orientation="Horizontal" Spacing="7">
-                    <TextBlock Text="{Binding Icon}" />
-                    <TextBlock Text="{Binding Title}" />
+                    <Image Source="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
                   </StackPanel>
                 </TreeDataTemplate>
               </TreeView.ItemTemplate>

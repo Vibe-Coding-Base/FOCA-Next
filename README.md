@@ -1,89 +1,215 @@
+<div align="center">
 
-<p align="left">
-<img src="./doc/FOCA_White.jpg"/>
-</p>
+# FOCA Next
 
-# FOCA (Fingerprinting Organizations with Collected Archives)
+**Fingerprinting Organizations with Collected Archives — rebuilt for Windows, Linux and macOS.**
 
-**FOCA  is a tool used mainly to find metadata and hidden information in the documents it scans**. These documents may be on web pages, and can be downloaded and analysed with FOCA.
+FOCA Next is a cross-platform fork and rewrite of [FOCA](https://github.com/ElevenPaths/FOCA),
+the classic OSINT tool for finding metadata and hidden information in documents.
+The original FOCA has been unmaintained since 2021 and runs only on Windows with SQL Server;
+FOCA Next modernises it into a portable application, a command-line tool and a reusable library.
 
-It is capable of analysing a wide variety of documents, with the most common being **Microsoft Office**, **Open Office**, or **PDF** files, although it also analyses Adobe InDesign or SVG files, for instance.
+[![CI](https://github.com/OWNER/foca-next/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/foca-next/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/OWNER/foca-next?include_prereleases)](https://github.com/OWNER/foca-next/releases)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-informational)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
 
-These documents are searched for using three possible search engines: **Google**, **Bing**, and **DuckDuckGo**. The sum of the results from the three engines amounts to a lot of documents. It is also possible to add local files to extract the EXIF information from graphic files, and a complete analysis of the information discovered through the URL is conducted even before downloading the file.
+<img src="docs/images/documents-light.png" alt="FOCA Next analysing documents" width="800" />
 
-## 🏭 Releases 
+</div>
 
-Check [here](https://github.com/ElevenPaths/FOCA/releases) our latest releases. 
+> **Legal note.** FOCA Next is for authorised security testing, OSINT research and educational use.
+> Only analyse documents and domains you own or have permission to assess, and respect the terms of
+> service and rate limits of any third-party service you query.
 
-## 🖥️ Cross-platform FOCA (Windows, Linux, macOS)
+---
 
-The release packages contain two self-contained programs; nothing else needs to be installed:
+## Table of contents
 
-* **`FOCA`**: the desktop application, with the familiar layout (project tree, documents, metadata summary, log). *View > Theme* (or the button at the top right) switches between light, dark and the system setting.
-* **`foca-cli`**: the same engine from the command line, for scripts and servers.
+- [Why FOCA Next](#why-foca-next)
+- [What's different from the original FOCA](#whats-different-from-the-original-foca)
+- [Features](#features)
+- [Install](#install)
+- [Quick start](#quick-start)
+  - [Document analysis (no domain needed)](#document-analysis-no-domain-needed)
+  - [Domain reconnaissance](#domain-reconnaissance)
+- [Screenshots](#screenshots)
+- [Build from source](#build-from-source)
+- [Documentation](#documentation)
+- [Security](#security)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License and credits](#license-and-credits)
 
-Projects are stored in a local SQLite database: `%LOCALAPPDATA%\FOCA` on Windows, `~/.local/share/FOCA` on Linux and `~/Library/Application Support/FOCA` on macOS. SQL Server is optional (`--sqlserver "<connection string>"`).
+## Why FOCA Next
 
-### Document analysis without a domain
+The original FOCA is a great tool, but it is tied to Windows Forms, .NET Framework and a local
+SQL Server instance, and it stopped receiving updates in 2021. Getting it to run today is often the
+hardest part. FOCA Next keeps what made FOCA useful — the document metadata extraction and the
+project-based workflow — and rebuilds everything around it:
 
-A project does not need a domain. Choose **Document analysis** when creating it and point FOCA at a folder of documents; a domain can be added later to enable web search.
+- **Runs anywhere.** One codebase for Windows, Linux and macOS.
+- **No database to install.** Projects live in a single SQLite file by default.
+- **Scriptable.** A full command-line tool (`foca-cli`) alongside the desktop app.
+- **Safer.** The document parsers are hardened against hostile files, and dependencies are current.
+- **Still familiar.** The desktop app keeps FOCA's layout and workflow.
+
+## What's different from the original FOCA
+
+| | Original FOCA | **FOCA Next** |
+|---|---|---|
+| Operating systems | Windows only | **Windows, Linux, macOS** |
+| Runtime | .NET Framework 4.x (WinForms) | **.NET 10** (Avalonia UI) |
+| Database | SQL Server required | **SQLite by default**, SQL Server optional |
+| Command line | — | **`foca-cli`** (analyze, search, export, import) |
+| Projects without a domain | Workaround (fake domain) | **First-class "Document analysis" mode** |
+| Document sources | Google, Bing, DuckDuckGo | + **Internet Archive (Wayback)**, pluggable providers |
+| Subdomains | DNSDumpster scraping | **Certificate Transparency (crt.sh)** |
+| Server inspection | HTTP/SMTP/FTP banners | + **TLS inspection** (protocol, cert, SAN), **security headers** |
+| Reports | In-app tree | **HTML / JSON / CSV** export (and CLI) |
+| Plugin API | WinForms-bound | **UI-neutral API v2**, isolated & approval-gated loading |
+| Theme | Fixed | **Light / dark / system**, remembered |
+| Document parsers | — | **Hardened** against XXE, zip/gzip bombs, ReDoS, huge allocations |
+| Dependencies | Several outdated / vulnerable | **Current**, build fails on known vulnerabilities |
+| Appearance | — | Updated, brand-consistent UI |
+
+The original Windows application is preserved under [`legacy/`](legacy/) as **FOCA Classic** and still
+builds, so Windows-only features that are not yet ported (active DNS reconnaissance, the backups
+fuzzer, the v1 plugins) remain available.
+
+## Features
+
+- **Document metadata extraction** from Microsoft Office (97–2003 and OOXML), OpenDocument, PDF,
+  images (EXIF/XMP, with embedded images), SVG/SVGZ, Adobe InDesign, RDP and ICA files.
+- **Metadata summary** across a project: users, e-mails, paths, printers, software, servers,
+  operating systems, companies and more — with spelling variants grouped together
+  (`ACME\jdoe`, `jdoe@acme.com`, `JDoe`).
+- **Document discovery** via Google, Bing, DuckDuckGo and the Internet Archive, with optional
+  Google Programmable Search / Bing API keys.
+- **Download and analyse** found documents, de-duplicated by content hash, in parallel.
+- **Domain reconnaissance**: subdomains from Certificate Transparency, TLS and HTTP fingerprinting.
+- **Reports** in HTML, JSON and CSV.
+- **Plugins** (API v2) that add commands, panels and analyzers.
+- **Import** projects from the original FOCA's SQL Server database.
+
+## Install
+
+Download the archive for your platform from the
+[**Releases**](https://github.com/OWNER/foca-next/releases) page and extract it. Each archive
+contains two self-contained programs — no .NET installation required:
+
+- `FOCA` / `FOCA.exe` — the desktop application.
+- `foca-cli` / `foca-cli.exe` — the command-line tool.
+
+| Platform | Archive |
+|---|---|
+| Windows x64 / arm64 | `FOCA-Next-<version>-win-x64.zip` / `-win-arm64.zip` |
+| Linux x64 / arm64 | `FOCA-Next-<version>-linux-x64.tar.gz` / `-linux-arm64.tar.gz` |
+| macOS Intel / Apple Silicon | `FOCA-Next-<version>-osx-x64.tar.gz` / `-osx-arm64.tar.gz` |
+
+Verify downloads against `SHA256SUMS`. On macOS the app is not yet notarised, so Gatekeeper will
+require right-click → Open the first time.
+
+## Quick start
+
+### Document analysis (no domain needed)
+
+FOCA Next can analyse a folder of documents directly — no domain, no searching.
 
 ```sh
-foca-cli analyze ./documents -r                          # report on the console
-foca-cli analyze ./documents -r --project "Audit 2026"   # also save the results
-foca-cli export "Audit 2026" -f html -o report.html      # HTML, JSON or CSV
+# Report to the console
+foca-cli analyze ./documents --recursive
+
+# Save the results in a project and export an HTML report
+foca-cli analyze ./documents -r --project "Audit 2026"
+foca-cli export "Audit 2026" --format html --output report.html
 ```
 
-### Documents published by a domain
+In the desktop app, choose **Document analysis** when creating a project and point it at a folder.
+
+### Domain reconnaissance
 
 ```sh
 foca-cli project create "ACME" --domain acme.com
-foca-cli search "ACME" --wayback --download              # search engines + Internet Archive, then analyse
-foca-cli project show "ACME"
+foca-cli search "ACME" --wayback --download     # find + download + analyse documents
+foca-cli project show "ACME"                     # metadata summary
+foca-cli export "ACME" -f html -o acme.html
 ```
 
-Projects of the previous FOCA can be imported with `foca-cli import-legacy -c "<SQL Server connection string>"`.
+Add API keys for Google Programmable Search / Bing / Shodan in **Tools → Options** (desktop) or pass
+`--api-key` / `--google-cx` to `foca-cli search`.
 
-### Plugins
-
-Plugins (API v2) go in their own folder under the FOCA data folder (`plugins/<name>`, with a `plugin.json`). They run with the same rights as FOCA, so each plugin must be approved in *Plugins > Load / approve plugins*; a modified plugin needs approval again. See `Plugin example/HelloPlugin`.
-
-### Building
+Import projects from the original FOCA:
 
 ```sh
-./build.ps1          # builds and tests everything (the WinForms version too, on Windows)
-./publish.ps1 -Runtime linux-x64 -Version 4.0.0
+foca-cli import-legacy --connection "Server=.\SQLEXPRESS;Database=Foca;Integrated Security=true;TrustServerCertificate=true"
 ```
 
-Requires the .NET 10 SDK; the WinForms version additionally needs Visual Studio or Build Tools on Windows.
+See the [CLI reference](docs/cli.md) for all commands.
 
-## ✔️ Requisites (legacy WinForms version)
+## Screenshots
 
-To run the original Windows version (`FOCA3_Pro.sln`) the system will need:
+| Light | Dark |
+|---|---|
+| ![Documents, light theme](docs/images/documents-light.png) | ![Documents, dark theme](docs/images/documents-dark.png) |
 
-* **Microsoft Windows** (64 bits).
-* **Microsoft .NET Framework 4.8**.
-* Microsoft **Visual C++ 2010 x64** or greater.
-* An instance of **SQL Server** 2014 or greater, or SQL Server LocalDB.
+## Build from source
 
-#### 📝Notes
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download). On Windows, building FOCA Classic
+additionally needs Visual Studio 2022+ or the Build Tools with the .NET desktop workload.
 
-* When starting, the app connects to `.\SQLEXPRESS`, then the default instance and LocalDB. If none is usable, it shows the error and prompts for a connection string.
+```sh
+git clone https://github.com/OWNER/foca-next.git
+cd foca-next
 
-## 📜 Licence
+# Build and test everything (FOCA Classic too, on Windows)
+./build.ps1
 
-[GNU GENERAL PUBLIC LICENCE](https://www.gnu.org/licenses/gpl-3.0.en.html)
+# Produce self-contained packages
+./build/publish.ps1 -Runtime linux-x64 -Version 1.0.0
+```
 
-## 🔊 Stay tuned
+The cross-platform solution is `Foca.slnx`; FOCA Classic is `legacy/FOCA.Classic.slnx`.
+See [docs/architecture.md](docs/architecture.md) for the project layout.
 
-Get the news about our latest doings and send us a message. We 💛 hearing from you. 
+## Documentation
 
-* [<img src="./doc/Twitter_Social_Icon_Circle_Color.svg" width="30" height="24"/>](https://twitter.com/Fear_the_Foca)  https://twitter.com/Fear_the_Foca
+- [CLI reference](docs/cli.md)
+- [Writing plugins](docs/plugins.md)
+- [Architecture and project layout](docs/architecture.md)
+- [Security model](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
+## Security
 
-## ☕ Further reading 
+FOCA Next analyses documents from untrusted sources, so the parsers are built defensively: XML is
+parsed without DTDs or external entities, archives are read with size caps, structure lengths are
+validated before allocating, and regexes have timeouts. Package vulnerabilities fail the build.
+See [SECURITY.md](SECURITY.md) for the threat model and how to report a vulnerability.
 
-* https://www.elevenpaths.com/labstools/foca/index.html
-* [ES] https://0xword.com/es/libros/59-pentesting-con-foca.html
-* [ES] https://es.wikipedia.org/wiki/FOCA_Tool
-* [ES] https://empresas.blogthinkbig.com/como-analizar-documentos-con-foca/
+## Roadmap
+
+- Port the remaining FOCA Classic modules where they make sense cross-platform (passive DNS: SPF,
+  DMARC, MX; network/servers map).
+- Installers (MSIX, AppImage, `.deb`, notarised `.dmg`) and auto-update.
+- A Windows compatibility shim to host selected v1 plugins.
+
+Active reconnaissance modules from the original FOCA (wordlist subdomain brute-force, DNS zone
+transfer attempts, DNS cache snooping, the backups fuzzer) are intentionally **not** ported to the
+cross-platform app; they remain in FOCA Classic.
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). In short: open an issue to
+discuss larger changes, keep `./build.ps1` green, and add tests for new behaviour.
+
+## License and credits
+
+FOCA Next is licensed under the [GNU GPL v3](LICENSE).
+
+It is based on [FOCA](https://github.com/ElevenPaths/FOCA) by **ElevenPaths** (Telefónica Tech),
+also GPL v3. FOCA Next is an independent fork and is not affiliated with or endorsed by
+Telefónica Tech.
+
+Maintained by **Tony**.
