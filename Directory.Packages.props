@@ -36,7 +36,7 @@
     <!-- DataGrid is versioned separately from Avalonia; 11.3.13 is its latest 11.x release -->
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.22" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">
