@@ -37,6 +37,18 @@ namespace MetadataExtractCore.Utilities
 
     public static class Functions
     {
+        /// <summary>
+        /// BinaryReader.ReadBytes allocates the requested size before reading, so a length taken from an
+        /// untrusted file could request gigabytes. Lengths must be non-negative and fit in the stream.
+        /// </summary>
+        public static byte[] ReadBytesChecked(this BinaryReader reader, long count)
+        {
+            Stream s = reader.BaseStream;
+            if (count < 0 || count > int.MaxValue || (s.CanSeek && count > s.Length - s.Position))
+                throw new InvalidDataException($"Length {count} exceeds the data available.");
+            return reader.ReadBytes((int)count);
+        }
+
         public static string GetFormatFile(Stream stmFile)
         {
             try

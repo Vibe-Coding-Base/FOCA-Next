@@ -56,7 +56,7 @@ namespace MetadataExtractCore.Extractors
                     if (pZip.PartExists(uriFile))
                     {
                         PackagePart pDocument = pZip.GetPart(uriFile);
-                        using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                        using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                         {
                             AnalizeFileCore(stmDoc);
                         }
@@ -65,7 +65,7 @@ namespace MetadataExtractCore.Extractors
                     if (pZip.PartExists(uriFile))
                     {
                         PackagePart pDocument = pZip.GetPart(uriFile);
-                        using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                        using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                         {
                             AnalizeFileApp(stmDoc);
                         }
@@ -78,7 +78,7 @@ namespace MetadataExtractCore.Extractors
                         if (pZip.PartExists(uriFile))
                         {
                             PackagePart pDocument = pZip.GetPart(uriFile);
-                            using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                            using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                             {
                                 AnalizeFileDocument(stmDoc);
                             }
@@ -90,7 +90,7 @@ namespace MetadataExtractCore.Extractors
                             if (pZip.PartExists(uriFile))
                             {
                                 PackagePart pDocument = pZip.GetPart(uriFile);
-                                using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                                using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                                 {
                                     AnalizeFileSettings(stmDoc);
                                 }
@@ -101,7 +101,7 @@ namespace MetadataExtractCore.Extractors
                         if (pZip.PartExists(uriFile))
                         {
                             PackagePart pDocument = pZip.GetPart(uriFile);
-                            using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                            using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                             {
                                 AnalizeLinks(stmDoc);
                             }
@@ -118,7 +118,7 @@ namespace MetadataExtractCore.Extractors
                                 if (pDocument != null)
                                 {
                                     char[] name = new char[32];
-                                    using (StreamReader sr = new StreamReader(pDocument.GetStream(FileMode.Open, FileAccess.Read), Encoding.Unicode))
+                                    using (StreamReader sr = new StreamReader(new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)), Encoding.Unicode))
                                     {
                                         sr.Read(name, 0, 32);
                                     }
@@ -128,7 +128,7 @@ namespace MetadataExtractCore.Extractors
                             if (pp.Uri.ToString().StartsWith("/xl/worksheets/_rels/"))
                             {
                                 PackagePart pDocument = pZip.GetPart(pp.Uri);
-                                using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                                using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                                 {
                                     AnalizeLinks(stmDoc);
                                 }
@@ -142,7 +142,7 @@ namespace MetadataExtractCore.Extractors
                             if (pp.Uri.ToString().StartsWith("/ppt/slides/_rels/"))
                             {
                                 PackagePart pDocument = pZip.GetPart(pp.Uri);
-                                using (Stream stmDoc = pDocument.GetStream(FileMode.Open, FileAccess.Read))
+                                using (Stream stmDoc = new BoundedStream(pDocument.GetStream(FileMode.Open, FileAccess.Read)))
                                 {
                                     AnalizeLinks(stmDoc);
                                 }
@@ -162,7 +162,7 @@ namespace MetadataExtractCore.Extractors
                              strFileNameLo.EndsWith(".jpeg") ||
                              strFileNameLo.EndsWith(".png")))
                         {
-                            using (EXIFDocument eDoc = new EXIFDocument(pp.GetStream(FileMode.Open, FileAccess.Read)))
+                            using (EXIFDocument eDoc = new EXIFDocument(new BoundedStream(pp.GetStream(FileMode.Open, FileAccess.Read))))
                             {
                                 FileMetadata exifMetadata = eDoc.AnalyzeFile();
                                 foundMetadata.EmbeddedImages.Add(System.IO.Path.GetFileName(strFileName), exifMetadata);
@@ -186,9 +186,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl;
                 xnl = doc.GetElementsByTagName("dc:title");
                 if (xnl.Count != 0)
@@ -283,9 +281,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("Application");
                 if (xnl.Count != 0)
                     if (xnl[0].HasChildNodes)
@@ -349,9 +345,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnlIns = doc.GetElementsByTagName("w:ins");
                 XmlNodeList xnlDel = doc.GetElementsByTagName("w:del");
                 if (xnlIns.Count > 0 || xnlDel.Count > 0)
@@ -403,9 +397,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("w:themeFontLang");
                 if (xnl.Count != 0)
                     this.foundMetadata.Language = xnl[0].Attributes["w:val"].Value;
@@ -420,9 +412,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("Relationship");
                 List<string> links = new List<string>();
                 foreach (XmlNode xn in xnl)

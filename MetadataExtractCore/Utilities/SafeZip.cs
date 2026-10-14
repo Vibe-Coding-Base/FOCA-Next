@@ -81,4 +81,47 @@ namespace MetadataExtractCore.Utilities
             archive.Dispose();
         }
     }
+
+    /// <summary>
+    /// Read-only wrapper that fails once more than a fixed number of bytes has been read. Used for package
+    /// parts opened through System.IO.Packaging, whose inflated size is otherwise unbounded (zip bombs).
+    /// </summary>
+    public sealed class BoundedStream : Stream
+    {
+        private readonly Stream inner;
+        private readonly long limit;
+        private long read;
+
+        public BoundedStream(Stream inner, long limit = SafeZip.DefaultMaxEntryBytes)
+        {
+            this.inner = inner;
+            this.limit = limit;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int n = inner.Read(buffer, offset, count);
+            read += n;
+            if (read > limit)
+                throw new InvalidDataException($"Package part inflates beyond the {limit} byte limit.");
+            return n;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => read; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                inner.Dispose();
+            base.Dispose(disposing);
+        }
+    }
 }

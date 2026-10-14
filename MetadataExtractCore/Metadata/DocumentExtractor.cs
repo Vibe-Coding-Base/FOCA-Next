@@ -13,6 +13,16 @@ namespace MetadataExtractCore.Extractors
         protected MemoryStream fileStream;
         protected FileMetadata foundMetadata;
 
+        /// <summary>Default timeout for every Regex created without one (extractors scan untrusted files: ReDoS).</summary>
+        public static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
+
+        static DocumentExtractor()
+        {
+            // Process-wide default, read when a Regex is constructed; must be set before any extractor runs
+            if (AppDomain.CurrentDomain.GetData("REGEX_DEFAULT_MATCH_TIMEOUT") == null)
+                AppDomain.CurrentDomain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", RegexTimeout);
+        }
+
         private bool disposed = false;
 
         public abstract FileMetadata AnalyzeFile();

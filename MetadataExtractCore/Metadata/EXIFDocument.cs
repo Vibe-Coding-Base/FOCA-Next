@@ -36,7 +36,8 @@ namespace MetadataExtractCore.Extractors
                             long currentPosition = this.fileStream.Position;
                             this.fileStream.Seek(0, SeekOrigin.Begin);
                             JpegSegment app1Segment = JpegSegmentReader.ReadSegments(new MetadataExtractor.IO.SequentialStreamReader(this.fileStream), new[] { JpegSegmentType.App1 }).FirstOrDefault();
-                            if (app1Segment != null)
+                            // Offset and length come from the file: check them before allocating
+                            if (app1Segment != null && (ulong)offset + length <= (ulong)app1Segment.Bytes.Length)
                             {
                                 byte[] thumb = new byte[length];
                                 Array.Copy(app1Segment.Bytes, offset, thumb, 0, length);

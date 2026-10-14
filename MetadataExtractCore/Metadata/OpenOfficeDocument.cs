@@ -107,9 +107,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("meta:generator");
                 if (xnl != null && xnl.Count != 0 && xnl[0].HasChildNodes)
                 {
@@ -276,9 +274,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("config:config-item");
                 if (xnl != null)
                 {
@@ -354,9 +350,7 @@ namespace MetadataExtractCore.Extractors
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xnl = doc.GetElementsByTagName("text:a");
                 if (xnl != null)
                 {
@@ -389,13 +383,19 @@ namespace MetadataExtractCore.Extractors
         /// </summary>
         /// <param name="stm">Stream que contiene el fichero VersionList.xml</param>
         /// <param name="zip">Fichero zip que contiene las versiones antiguas embebidas</param>
+        private const int MaxNestingDepth = 3;
+        private const int MaxVersionsPerDocument = 64;
+
+        [ThreadStatic]
+        private static int nestingDepth;
+
+        private int analyzedVersions;
+
         private void AnalizeFileVersionList(Stream stm, SafeZip zip)
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-                doc.Load(stm);
+                XmlDocument doc = SafeXml.Load(stm);
                 XmlNodeList xml = doc.GetElementsByTagName("VL:version-entry");
                 if (xml != null && xml.Count != 0)
                 {
@@ -410,13 +410,23 @@ namespace MetadataExtractCore.Extractors
                             vai.Date = d;
                         }
                         String strFile = "Versions/" + xn.Attributes["VL:title"].Value;
-                        if (zip.Contains(strFile))
+                        // Old versions are documents themselves and may contain versions: bound the recursion
+                        // (a self-referencing archive would otherwise overflow the stack and kill the process)
+                        if (zip.Contains(strFile) && nestingDepth < MaxNestingDepth && analyzedVersions++ < MaxVersionsPerDocument)
                         {
                             using (Stream stmXML = zip.ReadEntry(strFile))
                             {
                                 using (OpenOfficeDocument ooDoc = new OpenOfficeDocument(stmXML, strExtlo))
                                 {
-                                    vai.Metadata = ooDoc.AnalyzeFile();
+                                    nestingDepth++;
+                                    try
+                                    {
+                                        vai.Metadata = ooDoc.AnalyzeFile();
+                                    }
+                                    finally
+                                    {
+                                        nestingDepth--;
+                                    }
                                 }
                             }
                         }

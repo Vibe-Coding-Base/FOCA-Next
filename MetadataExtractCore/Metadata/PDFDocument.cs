@@ -183,9 +183,7 @@ namespace MetadataExtractCore.Extractors
                     string xmp = pDic.Stream.ToString();
                     if (xmp != string.Empty)
                     {
-                        XmlDocument xDoc = new XmlDocument();
-                        xDoc.XmlResolver = null;
-                        xDoc.LoadXml(xmp);
+                        System.Xml.XmlDocument xDoc = SafeXml.LoadXml(xmp);
                         this.ExtractFromXMP(xDoc);
                     }
                 }

@@ -1,3 +1,4 @@
+using MetadataExtractCore.Utilities;
 using MetadataExtractCore.Diagrams;
 using System;
 using System.Collections.Generic;
@@ -68,10 +69,10 @@ namespace MetadataExtractCore.Extractors
             this.ofh.ByteOrder = br.ReadUInt16();
             this.ofh.SizeOfSector = (UInt16)Math.Pow(2, br.ReadUInt16());
             this.ofh.SizeOfShortSector = (UInt16)Math.Pow(2, br.ReadUInt16());
-            br.ReadBytes(10);
+            br.ReadBytesChecked(10);
             this.ofh.NumberOfSectorsSAT = br.ReadUInt32();
             this.ofh.FirstSecIDDirectory = br.ReadInt32();
-            br.ReadBytes(4);
+            br.ReadBytesChecked(4);
             this.ofh.MinSizeOfStandardStream = br.ReadUInt32();
             this.ofh.FirstSecIDSSAT = br.ReadInt32();
             this.ofh.NumberOfSectorsSSAT = br.ReadUInt32();
@@ -222,17 +223,17 @@ namespace MetadataExtractCore.Extractors
                 {
                     DirEntry Directorio = new DirEntry();
 
-                    Directorio.EntryName = br.ReadBytes(64);
+                    Directorio.EntryName = br.ReadBytesChecked(64);
                     Directorio.EntryNameLength = br.ReadUInt16();
                     Directorio.EntryType = br.ReadByte();
                     Directorio.NodeColourEntry = br.ReadByte();
                     Directorio.DirIDLeftChild = br.ReadInt32();
                     Directorio.DirIDRigthChild = br.ReadInt32();
                     Directorio.DirIDRootNodeEntry = br.ReadInt32();
-                    Directorio.UID = br.ReadBytes(16);
+                    Directorio.UID = br.ReadBytesChecked(16);
                     Directorio.flags = br.ReadInt32();
-                    Directorio.CreationTime = br.ReadBytes(8);
-                    Directorio.ModificationTime = br.ReadBytes(8);
+                    Directorio.CreationTime = br.ReadBytesChecked(8);
+                    Directorio.ModificationTime = br.ReadBytesChecked(8);
                     Directorio.FirstSecIDStream = br.ReadInt32();
                     Directorio.LengthStream = br.ReadInt32();
                     Directorio.Reserved = br.ReadInt32();
@@ -435,13 +436,13 @@ namespace MetadataExtractCore.Extractors
                 this.OSL = br.ReadByte();
                 this.BuildVersion = br.ReadByte();
                 this.dwPlatformId = br.ReadByte();
-                this.ClassID = br.ReadBytes(16);
+                this.ClassID = br.ReadBytesChecked(16);
                 this.SectionCount = br.ReadUInt32();
                 this.Sections = new SectionEntry[this.SectionCount];
                 for (int i = 0; i < this.SectionCount; i++)
                 {
                     this.Sections[i] = new SectionEntry();
-                    this.Sections[i].UID = br.ReadBytes(16);
+                    this.Sections[i].UID = br.ReadBytesChecked(16);
                     this.Sections[i].Offset = br.ReadUInt32();
                 }
             }
@@ -699,18 +700,18 @@ namespace MetadataExtractCore.Extractors
                         return br.ReadBoolean().ToString();
                     case Body.Property.PROPERTY_TYPE_VT_BSTR:
                         UInt32 SizeUnicode = br.ReadUInt32();
-                        Byte[] BytesUnicode = br.ReadBytes((int)SizeUnicode);
+                        Byte[] BytesUnicode = br.ReadBytesChecked((int)SizeUnicode);
                         return Encoding.Unicode.GetString(BytesUnicode, 0, (int)SizeUnicode);
                     case Body.Property.PROPERTY_TYPE_VT_LPSTR:
                         UInt32 Size = br.ReadUInt32();
                         if (Size > 0)
-                            return Encoding.Default.GetString(br.ReadBytes((int)Size)).Replace('\0', ' ');
+                            return Encoding.Default.GetString(br.ReadBytesChecked((int)Size)).Replace('\0', ' ');
                         else
                             return string.Empty;
                     case Body.Property.PROPERTY_TYPE_VT_LPWSTR:
                         UInt32 SizeW = br.ReadUInt32();
                         if (SizeW > 0)
-                            return Encoding.Unicode.GetString(br.ReadBytes((int)SizeW * 2)).Replace('\0', ' ');
+                            return Encoding.Unicode.GetString(br.ReadBytesChecked((int)SizeW * 2)).Replace('\0', ' ');
                         else
                             return string.Empty;
                     case Body.Property.PROPERTY_TYPE_VT_FILETIME:
@@ -720,7 +721,7 @@ namespace MetadataExtractCore.Extractors
                         Size = br.ReadUInt32();
                         if (Size > 0 && Size < 128)
                         {
-                            String s = Encoding.Default.GetString(br.ReadBytes((int)Size)).Replace('\0', ' ');
+                            String s = Encoding.Default.GetString(br.ReadBytesChecked((int)Size)).Replace('\0', ' ');
 
                             for (int i = 0; i < s.Length;)
                                 if (char.IsControl(s[i])) s = s.Remove(i, 1);
@@ -933,7 +934,7 @@ namespace MetadataExtractCore.Extractors
                         {
                             int PropertyNumber = br.ReadInt32();
                             int CustomPropertyNameLength = br.ReadInt32();
-                            String Name = UnicodeNames ? Encoding.Unicode.GetString(br.ReadBytes(CustomPropertyNameLength * 2)).Trim('\0') : Encoding.UTF8.GetString(br.ReadBytes(CustomPropertyNameLength)).Trim('\0');
+                            String Name = UnicodeNames ? Encoding.Unicode.GetString(br.ReadBytesChecked(CustomPropertyNameLength * 2)).Trim('\0') : Encoding.UTF8.GetString(br.ReadBytesChecked(CustomPropertyNameLength)).Trim('\0');
                             if (PropertyNumber < Cuerpo.NumeroDePropiedades)
                             {
                                 int i;

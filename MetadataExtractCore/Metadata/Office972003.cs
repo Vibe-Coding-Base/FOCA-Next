@@ -122,9 +122,8 @@ namespace MetadataExtractCore.Extractors
                     Stream table = doc.OpenStream((tipo & 2) == 2 ? "1Table" : "0Table");
                     if (table != null)
                     {
-                        Byte[] DriverImpresora = new Byte[tam];
                         table.Seek(dir, SeekOrigin.Begin);
-                        table.Read(DriverImpresora, 0, (int)tam);
+                        Byte[] DriverImpresora = new BinaryReader(table).ReadBytesChecked(tam);
                         this.foundMetadata.Add(new Printer(Functions.FilterPrinter(Encoding.Default.GetString(DriverImpresora).Replace("\0", ""))));
                         table.Close();
                     }
@@ -160,12 +159,12 @@ namespace MetadataExtractCore.Extractors
                         string ruta;
                         if (unicode)
                         {
-                            Byte[] cadena = br1.ReadBytes(strSize * 2);
+                            Byte[] cadena = br1.ReadBytesChecked(strSize * 2);
                             ruta = Encoding.Unicode.GetString(cadena).Replace('\0', ' ');
                         }
                         else
                         {
-                            Byte[] cadena = br1.ReadBytes(strSize);
+                            Byte[] cadena = br1.ReadBytesChecked(strSize);
                             ruta = Encoding.Default.GetString(cadena).Replace('\0', ' ');
                         }
                         this.foundMetadata.Add(new Diagrams.Path(PathAnalysis.CleanPath(ruta), true));
@@ -196,7 +195,7 @@ namespace MetadataExtractCore.Extractors
                             long PosOri = Workbook.Position;
                             if (br.ReadInt16() == 0)
                             {
-                                String PrinterName = Encoding.Unicode.GetString(br.ReadBytes(32 * 2)).Replace('\0', ' ');
+                                String PrinterName = Encoding.Unicode.GetString(br.ReadBytesChecked(32 * 2)).Replace('\0', ' ');
                                 br.ReadInt16();
                                 br.ReadInt16();
                                 Int16 StructSize = br.ReadInt16();
@@ -205,7 +204,7 @@ namespace MetadataExtractCore.Extractors
                                 if (DriverSize != 0)
                                 {
                                     Workbook.Seek(StructSize - (8 + 64), SeekOrigin.Current);
-                                    Byte[] Driver = br.ReadBytes(DriverSize);
+                                    Byte[] Driver = br.ReadBytesChecked(DriverSize);
                                     String ImpresoraDriver = Functions.ExtractPrinterFromBytes(Driver);
                                     if (!string.IsNullOrEmpty(ImpresoraDriver.Trim()))
                                         this.foundMetadata.Add(new Printer(Functions.FilterPrinter(ImpresoraDriver.Replace("\0", ""))));
@@ -256,12 +255,12 @@ namespace MetadataExtractCore.Extractors
                             string author;
                             if (unicode)
                             {
-                                Byte[] cadena = br.ReadBytes(strSize * 2);
+                                Byte[] cadena = br.ReadBytesChecked(strSize * 2);
                                 author = Encoding.Unicode.GetString(cadena).Replace('\0', ' ');
                             }
                             else
                             {
-                                Byte[] cadena = br.ReadBytes(strSize);
+                                Byte[] cadena = br.ReadBytesChecked(strSize);
                                 author = Encoding.Default.GetString(cadena).Replace('\0', ' ');
                             }
                             History hi = new History(author);
@@ -271,12 +270,12 @@ namespace MetadataExtractCore.Extractors
                             strSize = br.ReadUInt16();
                             if (unicode)
                             {
-                                Byte[] cadena = br.ReadBytes(strSize * 2);
+                                Byte[] cadena = br.ReadBytesChecked(strSize * 2);
                                 hi.Path = Encoding.Unicode.GetString(cadena).Replace('\0', ' ');
                             }
                             else
                             {
-                                Byte[] cadena = br.ReadBytes(strSize);
+                                Byte[] cadena = br.ReadBytesChecked(strSize);
                                 hi.Path = Encoding.Default.GetString(cadena).Replace('\0', ' ');
                             }
                             this.foundMetadata.Add(hi);
@@ -400,7 +399,7 @@ namespace MetadataExtractCore.Extractors
 
                     while (WordDocument.Position + 0x200 < WordDocument.Length)
                     {
-                        byte[] FKP = br.ReadBytes(0x200);
+                        byte[] FKP = br.ReadBytesChecked(0x200);
                         if (FKP[0x1FF] == 00) break;
                         foreach (int offset in Functions.SearchBytesInBytes(FKP, new byte[] { 0x03, 0x6A }))
                         {
@@ -415,7 +414,7 @@ namespace MetadataExtractCore.Extractors
                                     long posOri = stmData.Position;
                                     int bufferLen = PICLength < stmData.Length - stmData.Position ? (int)PICLength - 4 : (int)(stmData.Length - stmData.Position);
                                     if (bufferLen <= 0) continue;
-                                    byte[] bufferPIC = brData.ReadBytes(bufferLen);
+                                    byte[] bufferPIC = brData.ReadBytesChecked(bufferLen);
 
                                     string strImageName = String.Empty;
 
@@ -473,7 +472,7 @@ namespace MetadataExtractCore.Extractors
                     BinaryReader brData = new BinaryReader(stmPictures);
                     UInt32 PICLength = brData.ReadUInt32();
                     if (PICLength == 0 || stmPictures.Position + PICLength > stmPictures.Length) break;
-                    byte[] bufferPIC = brData.ReadBytes((int)PICLength);
+                    byte[] bufferPIC = brData.ReadBytesChecked((int)PICLength);
                     string strImageName = "Image" + ImagesFound++;
 
                     using (MemoryStream msJPG = new MemoryStream(bufferPIC, 0x11, bufferPIC.Length - 0x11))
