@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Example FOCA plugin for API v2. Build it and copy the output folder into the FOCA plugins folder. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Contract assemblies are provided by FOCA at run time: do not copy them -->
+    <ProjectReference Include="..\..\Foca.Plugins.Abstractions\Foca.Plugins.Abstractions.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="plugin.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Transitive references (Foca.Core, extractors) would be copied too; FOCA loads its own copies -->
+  <Target Name="ExcludeHostAssemblies" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Foca.Plugins.Abstractions' Or '%(Filename)' == 'Foca.Core' Or '%(Filename)' == 'MetadataExtractCore' Or '%(Filename)' == 'SearcherCore'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

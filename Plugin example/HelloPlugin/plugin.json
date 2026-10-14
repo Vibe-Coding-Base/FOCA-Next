@@ -1,0 +1,10 @@
+{
+  "id": "example.hello",
+  "name": "Hello plugin",
+  "version": "1.0.0",
+  "author": "FOCA",
+  "description": "Example plugin: counts the users found in the project.",
+  "apiVersion": 2,
+  "assembly": "HelloPlugin.dll",
+  "entryType": "HelloPlugin.Plugin"
+}
