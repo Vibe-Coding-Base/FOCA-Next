@@ -8,10 +8,14 @@ public sealed class ProjectStore
 {
     private readonly Func<FocaDbContext> contextFactory;
 
-    public ProjectStore(Func<FocaDbContext> contextFactory)
+    public ProjectStore(Func<FocaDbContext> contextFactory, string location = "")
     {
         this.contextFactory = contextFactory;
+        Location = location;
     }
+
+    /// <summary>Database file or server, for display.</summary>
+    public string Location { get; }
 
     /// <summary>The per-user SQLite database: %LOCALAPPDATA%\FOCA on Windows, ~/.local/share/FOCA on Linux, ~/Library/Application Support/FOCA on macOS.</summary>
     public static string DefaultDatabasePath =>
@@ -21,11 +25,11 @@ public sealed class ProjectStore
     {
         path = Path.GetFullPath(path ?? DefaultDatabasePath);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        return new ProjectStore(FocaDbContext.CreateFactory(DatabaseProvider.Sqlite, $"Data Source={path}"));
+        return new ProjectStore(FocaDbContext.CreateFactory(DatabaseProvider.Sqlite, $"Data Source={path}"), path);
     }
 
     public static ProjectStore OpenSqlServer(string connectionString) =>
-        new(FocaDbContext.CreateFactory(DatabaseProvider.SqlServer, connectionString));
+        new(FocaDbContext.CreateFactory(DatabaseProvider.SqlServer, connectionString), new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString).DataSource);
 
     private FocaDbContext Context() => contextFactory();
 

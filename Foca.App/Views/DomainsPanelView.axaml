@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Foca.App.ViewModels"
+             x:Class="Foca.App.Views.DomainsPanelView"
+             x:DataType="vm:DomainsPanelViewModel">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
+      <TextBlock Text="Domains" FontSize="18" FontWeight="SemiBold" />
+      <TextBlock Text="{Binding Hint}" Foreground="#A0154E" TextWrapping="Wrap" IsVisible="{Binding !HasDomain}" />
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Button Content="Find names in Certificate Transparency" Command="{Binding FindSubdomainsCommand}" />
+        <Button Content="Inspect selected host (TLS / HTTP)" Command="{Binding InspectCommand}" />
+      </StackPanel>
+    </StackPanel>
+    <Grid ColumnDefinitions="280,5,*">
+      <ListBox ItemsSource="{Binding Hosts}" SelectedItem="{Binding SelectedHost}" />
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+      <TextBox Grid.Column="2" Text="{Binding Details}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+               FontFamily="Consolas,Menlo,DejaVu Sans Mono,monospace" />
+    </Grid>
+  </DockPanel>
+</UserControl>

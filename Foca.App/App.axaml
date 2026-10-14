@@ -1,0 +1,13 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Foca.App.App"
+             RequestedThemeVariant="Default">
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+  </Application.Styles>
+  <Application.Resources>
+    <!-- FOCA brand colour used for icons and accents in the original application -->
+    <SolidColorBrush x:Key="FocaAccent" Color="#A0154E" />
+  </Application.Resources>
+</Application>

@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Foca.App.ViewModels"
+             xmlns:m="using:Foca.Core.Model"
+             x:Class="Foca.App.Views.ProjectPanelView"
+             x:DataType="vm:ProjectPanelViewModel">
+  <ScrollViewer>
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" MaxWidth="820"
+          HorizontalAlignment="Center" Margin="12">
+      <Grid.Styles>
+        <Style Selector="TextBlock.label">
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Margin" Value="0,6,24,6" />
+        </Style>
+        <Style Selector="Grid > TextBox, Grid > ComboBox, Grid > DatePicker">
+          <Setter Property="Margin" Value="0,6" />
+        </Style>
+      </Grid.Styles>
+
+      <Image Source="/Assets/foca.png" Height="110" HorizontalAlignment="Left" Margin="0,0,0,12" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="12">
+        <TextBlock Text="Project mode" VerticalAlignment="Top" Margin="0,6,0,0" />
+        <StackPanel>
+          <RadioButton Content="Domain reconnaissance" IsChecked="{Binding IsDomainMode}" GroupName="mode" />
+          <RadioButton Content="Document analysis (domain optional)" IsChecked="{Binding IsDocumentMode}" GroupName="mode" />
+        </StackPanel>
+      </StackPanel>
+
+      <TextBlock Grid.Row="1" Classes="label" Text="Select project" />
+      <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}" HorizontalAlignment="Stretch"
+                PlaceholderText="Open an existing project">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="m:Project">
+            <TextBlock Text="{Binding Name}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+      <TextBlock Grid.Row="2" Classes="label" Text="Project name" />
+      <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Name}" />
+
+      <TextBlock Grid.Row="3" Classes="label" Text="{Binding DomainLabel}" />
+      <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Domain}" IsEnabled="{Binding IsDomainMode}" Watermark="example.com" />
+
+      <TextBlock Grid.Row="4" Classes="label" Text="Alternative domains" VerticalAlignment="Top" />
+      <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AlternativeDomains}" IsEnabled="{Binding IsDomainMode}" AcceptsReturn="True" Height="70"
+               Watermark="One domain per line" />
+
+      <TextBlock Grid.Row="5" Classes="label" Text="Folder where to save documents" />
+      <Grid Grid.Row="5" Grid.Column="1" ColumnDefinitions="*,Auto" Margin="0,6">
+        <TextBox Text="{Binding DownloadFolder}" Watermark="Default: FOCA data folder" />
+        <Button Grid.Column="1" Content="..." Command="{Binding BrowseFolderCommand}" Margin="6,0,0,0" />
+      </Grid>
+
+      <TextBlock Grid.Row="6" Classes="label" Text="Project date" />
+      <DatePicker Grid.Row="6" Grid.Column="1" SelectedDate="{Binding Date}" />
+
+      <TextBlock Grid.Row="7" Classes="label" Text="Project notes" VerticalAlignment="Top" />
+      <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Notes}" AcceptsReturn="True" Height="70" />
+
+      <TextBlock Grid.Row="8" Grid.ColumnSpan="2" Text="{Binding Error}" Foreground="#C62828" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,6" />
+
+      <DockPanel Grid.Row="9" Grid.ColumnSpan="2" Margin="0,12,0,0">
+        <Button DockPanel.Dock="Left" Content="{Binding SubmitText}" Command="{Binding SubmitCommand}" Classes="accent" MinWidth="120" />
+        <Button DockPanel.Dock="Right" Content="Cancel" Command="{Binding CancelCommand}" MinWidth="120" HorizontalAlignment="Right" />
+      </DockPanel>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

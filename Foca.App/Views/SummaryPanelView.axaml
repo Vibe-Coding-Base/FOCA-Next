@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Foca.App.ViewModels"
+             x:Class="Foca.App.Views.SummaryPanelView"
+             x:DataType="vm:SummaryPanelViewModel">
+  <DockPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,240" Margin="0,0,0,8">
+      <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+      <TextBox Grid.Column="1" Text="{Binding Filter}" Watermark="Filter" />
+    </Grid>
+    <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="All">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="110" />
+        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="2*" />
+        <DataGridTextColumn Header="Documents" Binding="{Binding Documents}" Width="90" />
+        <DataGridTextColumn Header="Variants" Binding="{Binding Variants}" Width="*" />
+        <DataGridTextColumn Header="Found in" Binding="{Binding FoundIn}" Width="2*" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

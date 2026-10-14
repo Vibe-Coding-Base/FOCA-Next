@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Foca.App.ViewModels"
+             x:Class="Foca.App.Views.DocumentsPanelView"
+             x:DataType="vm:DocumentsPanelViewModel">
+  <DockPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,Auto,*" Margin="0,0,0,8">
+      <Image Source="/Assets/foca.png" Height="80" Margin="0,0,16,0" />
+
+      <StackPanel Grid.Column="1" Margin="0,0,24,0">
+        <TextBlock Text="Search engines" FontWeight="SemiBold" />
+        <ItemsControl ItemsSource="{Binding Engines}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SelectableOption">
+              <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" MinHeight="24" Padding="4,0" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <StackPanel Grid.Column="2">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="Extensions" FontWeight="SemiBold" />
+          <Button Content="All" Command="{Binding SelectAllTypesCommand}" CommandParameter="{x:True}" Padding="4,0" Classes="link" />
+          <Button Content="None" Command="{Binding SelectAllTypesCommand}" CommandParameter="{x:False}" Padding="4,0" Classes="link" />
+        </StackPanel>
+        <ItemsControl ItemsSource="{Binding FileTypes}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SelectableOption">
+              <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Width="80" MinHeight="24" Padding="4,0" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Grid>
+
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+      <TextBox Text="{Binding SearchText}" IsReadOnly="True" Watermark="{Binding SearchHint}" />
+      <Button Grid.Column="1" Content="{Binding SearchButtonText}" Command="{Binding SearchAllCommand}" Margin="6,0,0,0" MinWidth="110" Classes="accent" />
+    </Grid>
+
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,4">
+      <Button Content="Add file..." Command="{Binding AddFilesCommand}" />
+      <Button Content="Add folder..." Command="{Binding AddFolderCommand}" />
+      <Button Content="Download all" Command="{Binding DownloadAllCommand}" />
+      <Button Content="Extract all metadata" Command="{Binding ExtractAllCommand}" />
+    </StackPanel>
+
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,200" Margin="0,4,0,0">
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center" />
+      <ProgressBar Grid.Column="1" Value="{Binding Progress}" IsVisible="{Binding IsBusy}" />
+    </Grid>
+
+    <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="All" CanUserResizeColumns="True">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Id" Binding="{Binding Index}" Width="50" />
+        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="60" />
+        <DataGridTextColumn Header="URL" Binding="{Binding Url}" Width="*" />
+        <DataGridTextColumn Header="Download" Binding="{Binding Downloaded}" Width="80" />
+        <DataGridTextColumn Header="Download Date" Binding="{Binding DownloadDate}" Width="140" />
+        <DataGridTextColumn Header="Size" Binding="{Binding Size}" Width="80" />
+        <DataGridTextColumn Header="Metadata Extracted" Binding="{Binding Analyzed}" Width="140" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

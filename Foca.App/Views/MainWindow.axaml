@@ -1,0 +1,113 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Foca.App.ViewModels"
+        xmlns:views="using:Foca.App.Views"
+        xmlns:app="using:Foca.App"
+        x:Class="Foca.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Icon="/Assets/foca.ico"
+        Width="1100" Height="720" MinWidth="900" MinHeight="560">
+
+  <Window.DataTemplates>
+    <DataTemplate DataType="vm:ProjectPanelViewModel">
+      <views:ProjectPanelView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:DocumentsPanelViewModel">
+      <views:DocumentsPanelView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SummaryPanelViewModel">
+      <views:SummaryPanelView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:DomainsPanelViewModel">
+      <views:DomainsPanelView />
+    </DataTemplate>
+  </Window.DataTemplates>
+
+  <DockPanel>
+    <!-- Quick light/dark toggle at the right of the menu bar -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+    <!-- Main menu: same entries as the original FOCA -->
+    <Menu>
+      <MenuItem Header="_Project">
+        <MenuItem Header="_New project" Command="{Binding NewProjectCommand}" />
+        <MenuItem Header="_Edit project" Command="{Binding EditProjectCommand}" IsEnabled="{Binding HasProject}" />
+        <Separator />
+        <MenuItem Header="Export report" IsEnabled="{Binding HasProject}">
+          <MenuItem Header="HTML..." Command="{Binding ExportReportCommand}" CommandParameter="Html" />
+          <MenuItem Header="JSON..." Command="{Binding ExportReportCommand}" CommandParameter="Json" />
+          <MenuItem Header="CSV..." Command="{Binding ExportReportCommand}" CommandParameter="Csv" />
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="Theme">
+          <MenuItem Header="Follow system" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsSystemTheme, Mode=OneWay}"
+                    Command="{Binding SetThemeCommand}" CommandParameter="{x:Static app:AppTheme.System}" />
+          <MenuItem Header="Light" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsLightTheme, Mode=OneWay}"
+                    Command="{Binding SetThemeCommand}" CommandParameter="{x:Static app:AppTheme.Light}" />
+          <MenuItem Header="Dark" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsDarkTheme, Mode=OneWay}"
+                    Command="{Binding SetThemeCommand}" CommandParameter="{x:Static app:AppTheme.Dark}" />
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="P_lugins">
+        <MenuItem Header="Load / approve plugins..." Command="{Binding ManagePluginsCommand}" />
+        <Separator IsVisible="{Binding HasPluginCommands}" />
+        <MenuItem Header="Plugin commands" ItemsSource="{Binding PluginCommands}" IsVisible="{Binding HasPluginCommands}">
+          <MenuItem.ItemContainerTheme>
+            <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:PluginMenuItem">
+              <Setter Property="Header" Value="{Binding Title}" />
+              <Setter Property="Command" Value="{Binding Command}" />
+            </ControlTheme>
+          </MenuItem.ItemContainerTheme>
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_About" Command="{Binding AboutCommand}" />
+    </Menu>
+    <Button Grid.Column="1" Content="{Binding ThemeButtonText}" Command="{Binding CycleThemeCommand}" Padding="10,2" Margin="0,0,6,0"
+            VerticalAlignment="Center" ToolTip.Tip="Switch between system, light and dark appearance" />
+    </Grid>
+
+    <Grid RowDefinitions="*,5,180" Margin="4">
+      <Grid ColumnDefinitions="260,5,*">
+        <!-- Project tree -->
+        <TreeView ItemsSource="{Binding Tree}" SelectedItem="{Binding SelectedNode}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+          <TreeView.ItemContainerTheme>
+            <ControlTheme TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}" x:DataType="vm:NavigationNode">
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+            </ControlTheme>
+          </TreeView.ItemContainerTheme>
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:NavigationNode">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding Icon}" />
+                <TextBlock Text="{Binding Title}" />
+              </StackPanel>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+        <ContentControl Grid.Column="2" Content="{Binding CurrentPanel}" Margin="8,0,0,0" />
+      </Grid>
+
+      <GridSplitter Grid.Row="1" ResizeDirection="Rows" />
+
+      <!-- Log panel -->
+      <DockPanel Grid.Row="2">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+          <Button Content="{Binding Log.AutoScrollText}" Command="{Binding Log.ToggleAutoScrollCommand}" />
+          <Button Content="Clear" Command="{Binding Log.ClearCommand}" />
+          <Button Content="Save log to File" Command="{Binding Log.SaveCommand}" />
+        </StackPanel>
+        <DataGrid x:Name="LogGrid" ItemsSource="{Binding Log.Entries}" IsReadOnly="True" AutoGenerateColumns="False"
+                  GridLinesVisibility="Horizontal" CanUserSortColumns="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Time" Binding="{Binding TimeText}" Width="90" />
+            <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="120" />
+            <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
+            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Grid>
+  </DockPanel>
+</Window>
