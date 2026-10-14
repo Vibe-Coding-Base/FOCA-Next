@@ -38,7 +38,7 @@ internal static class SearchCommand
         {
             (ProjectStore store, Project p) = await stores.OpenProjectAsync(parse, parse.GetValue(project)!, ct);
             if (!p.HasDomain)
-                throw new CliException(Project.DomainRequiredMessage + $" Use: foca project set-domain \"{p.Name}\" <domain>");
+                throw new CliException(Project.DomainRequiredMessage + $" Use: foca-cli project set-domain \"{p.Name}\" <domain>");
 
             string[] exts = parse.GetValue(extensions)!;
             using HttpClient services = TargetHttpClient.ForServices();
@@ -83,7 +83,7 @@ internal static class SearchCommand
                 documents = await DownloadAndAnalyzeAsync(p, documents, services, parse.GetValue(concurrency), ct);
 
             await store.SaveDocumentsAsync(p.Id, documents, ct);
-            Console.Error.WriteLine($"Saved to project '{p.Name}'. Report: foca export \"{p.Name}\" -f html -o report.html");
+            Console.Error.WriteLine($"Saved to project '{p.Name}'. Report: foca-cli export \"{p.Name}\" -f html -o report.html");
             return 0;
         }));
         return command;

@@ -196,3 +196,6 @@ $RECYCLE.BIN/
 # Ignore obj and bin folders
 obj
 bin
+
+# Release packages built by publish.ps1
+artifacts/

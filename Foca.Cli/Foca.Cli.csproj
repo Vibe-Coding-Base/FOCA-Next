@@ -6,7 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Foca.Cli</RootNamespace>
-    <AssemblyName>foca</AssemblyName>
+    <!-- Not "foca": it would overwrite FOCA (the desktop app) on case-insensitive file systems -->
+    <AssemblyName>foca-cli</AssemblyName>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 

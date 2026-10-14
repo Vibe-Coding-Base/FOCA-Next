@@ -15,18 +15,60 @@ These documents are searched for using three possible search engines: **Google**
 
 Check [here](https://github.com/ElevenPaths/FOCA/releases) our latest releases. 
 
-## ✔️ Requisites
+## 🖥️ Cross-platform FOCA (Windows, Linux, macOS)
 
-To run the solution locally the system will need:
+The release packages contain two self-contained programs; nothing else needs to be installed:
 
-* **Microsoft Windows** (64 bits). Versions 7, 8, 8.1 and 10.
-* **Microsoft .NET Framework 4.7.1**.
+* **`FOCA`**: the desktop application, with the familiar layout (project tree, documents, metadata summary, log). *View > Theme* (or the button at the top right) switches between light, dark and the system setting.
+* **`foca-cli`**: the same engine from the command line, for scripts and servers.
+
+Projects are stored in a local SQLite database: `%LOCALAPPDATA%\FOCA` on Windows, `~/.local/share/FOCA` on Linux and `~/Library/Application Support/FOCA` on macOS. SQL Server is optional (`--sqlserver "<connection string>"`).
+
+### Document analysis without a domain
+
+A project does not need a domain. Choose **Document analysis** when creating it and point FOCA at a folder of documents; a domain can be added later to enable web search.
+
+```sh
+foca-cli analyze ./documents -r                          # report on the console
+foca-cli analyze ./documents -r --project "Audit 2026"   # also save the results
+foca-cli export "Audit 2026" -f html -o report.html      # HTML, JSON or CSV
+```
+
+### Documents published by a domain
+
+```sh
+foca-cli project create "ACME" --domain acme.com
+foca-cli search "ACME" --wayback --download              # search engines + Internet Archive, then analyse
+foca-cli project show "ACME"
+```
+
+Projects of the previous FOCA can be imported with `foca-cli import-legacy -c "<SQL Server connection string>"`.
+
+### Plugins
+
+Plugins (API v2) go in their own folder under the FOCA data folder (`plugins/<name>`, with a `plugin.json`). They run with the same rights as FOCA, so each plugin must be approved in *Plugins > Load / approve plugins*; a modified plugin needs approval again. See `Plugin example/HelloPlugin`.
+
+### Building
+
+```sh
+./build.ps1          # builds and tests everything (the WinForms version too, on Windows)
+./publish.ps1 -Runtime linux-x64 -Version 4.0.0
+```
+
+Requires the .NET 10 SDK; the WinForms version additionally needs Visual Studio or Build Tools on Windows.
+
+## ✔️ Requisites (legacy WinForms version)
+
+To run the original Windows version (`FOCA3_Pro.sln`) the system will need:
+
+* **Microsoft Windows** (64 bits).
+* **Microsoft .NET Framework 4.8**.
 * Microsoft **Visual C++ 2010 x64** or greater.
-* An instance of **SQL Server** 2014 or greater.
+* An instance of **SQL Server** 2014 or greater, or SQL Server LocalDB.
 
 #### 📝Notes
 
-* When starting the app the system will check if there is a **SQL Server** instance available. If none is found, the system will prompt a window for introducing a connection string.  
+* When starting, the app connects to `.\SQLEXPRESS`, then the default instance and LocalDB. If none is usable, it shows the error and prompts for a connection string.
 
 ## 📜 Licence
 

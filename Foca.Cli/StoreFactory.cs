@@ -28,7 +28,7 @@ internal sealed class StoreFactory
     {
         ProjectStore store = await OpenAsync(parse, cancellationToken);
         Project project = await store.FindProjectAsync(nameOrId, cancellationToken)
-            ?? throw new CliException($"Project '{nameOrId}' not found. List projects with: foca project list");
+            ?? throw new CliException($"Project '{nameOrId}' not found. List projects with: foca-cli project list");
         return (store, project);
     }
 }

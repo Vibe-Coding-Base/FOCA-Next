@@ -1,0 +1,45 @@
+name: Release
+
+# Push a tag such as v4.0.0 to build self-contained packages for every platform and attach them to a draft release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            runtimes: win-x64,win-arm64
+          - os: ubuntu-latest
+            runtimes: linux-x64,linux-arm64
+          - os: macos-latest
+            runtimes: osx-x64,osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release -SkipLegacy
+      - name: Package
+        shell: pwsh
+        run: ./publish.ps1 -Runtime ('${{ matrix.runtimes }}' -split ',') -Version ('${{ github.ref_name }}'.TrimStart('v'))
+      # macOS: Gatekeeper blocks unsigned apps downloaded from the internet. Signing and notarisation need an
+      # Apple Developer ID; add the certificate as a secret and run codesign/notarytool here before release.
+      - name: Rename checksums per runner
+        shell: pwsh
+        run: Move-Item artifacts/SHA256SUMS "artifacts/SHA256SUMS-${{ matrix.os }}"
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            artifacts/*.zip
+            artifacts/*.tar.gz
+            artifacts/SHA256SUMS-*
