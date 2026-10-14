@@ -1,22 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using RestSharp;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 
 namespace SearcherCore.Searcher.BingAPI
 {
     public class SearchBingApi
     {
+        private static readonly HttpClient client = new HttpClient { BaseAddress = new Uri("https://api.bing.microsoft.com/v7.0/") };
         private readonly string _secretKey;
-        private readonly RestClient client;
         private const int ResultCountPerPage = 50;
 
         public SearchBingApi(string secretKey)
         {
-            // V7.0 of the API
-            client = new RestClient("https://api.bing.microsoft.com/v7.0");
             // secret key to authenticate requests
             _secretKey = secretKey;
         }
@@ -25,30 +23,38 @@ namespace SearcherCore.Searcher.BingAPI
         {
             List<Uri> results = new List<Uri>();
             int currentOffset = ResultCountPerPage * pageNumber;
-            RestRequest request = new RestRequest($"search?count={ResultCountPerPage}&safeSearch=Off&textFormat=Raw&offset={currentOffset}&q={q}", Method.GET);
-            // Request header which sends the private key to the server
-            request.AddHeader("Ocp-Apim-Subscription-Key", _secretKey);
-            IRestResponse<List<string>> queryResult = client.ExecuteTaskAsync<List<string>>(request, cancelToken).Result;
-            if (queryResult.StatusCode == System.Net.HttpStatusCode.OK)
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"search?count={ResultCountPerPage}&safeSearch=Off&textFormat=Raw&offset={currentOffset}&q={Uri.EscapeDataString(q)}"))
             {
-                JToken token = JObject.Parse(queryResult.Data[0]);
-
-                var webpages = (JArray)token["webPages"]["value"];
-                foreach (string foundUrl in webpages.Select(link => ((string)link.SelectToken("url"))))
+                // Request header which sends the private key to the server
+                request.Headers.Add("Ocp-Apim-Subscription-Key", _secretKey);
+                using (HttpResponseMessage response = client.SendAsync(request, cancelToken).GetAwaiter().GetResult())
                 {
-                    if (Uri.TryCreate(foundUrl, UriKind.Absolute, out Uri url))
+                    if (!response.IsSuccessStatusCode)
                     {
-                        results.Add(url);
+                        throw new InvalidOperationException($"The request could not be completed. Please check your API key. Response status: {response.ReasonPhrase}");
                     }
-                    currentOffset++;
-                }
 
-                moreResults = ((int)token.SelectToken("webPages").SelectToken("totalEstimatedMatches")) > currentOffset;
-                return results;
-            }
-            else
-            {
-                throw new InvalidOperationException($"The request could not be completed. Please check your API key. Response status: {queryResult.StatusDescription}");
+                    JToken token = JObject.Parse(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                    JToken webPagesToken = token["webPages"];
+                    if (webPagesToken == null)
+                    {
+                        moreResults = false;
+                        return results;
+                    }
+
+                    var webpages = (JArray)webPagesToken["value"];
+                    foreach (string foundUrl in webpages.Select(link => ((string)link.SelectToken("url"))))
+                    {
+                        if (Uri.TryCreate(foundUrl, UriKind.Absolute, out Uri url))
+                        {
+                            results.Add(url);
+                        }
+                        currentOffset++;
+                    }
+
+                    moreResults = ((int)webPagesToken.SelectToken("totalEstimatedMatches")) > currentOffset;
+                    return results;
+                }
             }
         }
     }

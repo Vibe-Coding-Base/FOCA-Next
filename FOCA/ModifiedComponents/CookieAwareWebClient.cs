@@ -1,3 +1,4 @@
+using FOCA.Utilites;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +12,7 @@ namespace FOCA.Search
 
         protected override WebRequest GetWebRequest(Uri address)
         {
-            WebRequest request = base.GetWebRequest(address);
+            WebRequest request = TargetHttp.Relax(base.GetWebRequest(address));
             if (request is HttpWebRequest)
             {
                 (request as HttpWebRequest).CookieContainer = m_container;

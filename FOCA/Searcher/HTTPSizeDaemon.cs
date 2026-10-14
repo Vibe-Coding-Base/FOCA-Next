@@ -1,4 +1,5 @@
 using FOCA.Database.Entities;
+using FOCA.Utilites;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
@@ -77,7 +78,7 @@ namespace FOCA.Searcher
         {
             try
             {
-                HttpWebRequest wr = (HttpWebRequest)HttpWebRequest.Create(strURL);
+                HttpWebRequest wr = TargetHttp.Create(strURL);
                 wr.Method = "HEAD";
                 wr.KeepAlive = false;
                 wr.Timeout = 3000;

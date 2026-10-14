@@ -1,4 +1,3 @@
-using Ionic.Zip;
 using MetadataExtractCore.Extractors;
 using System;
 using System.Collections.Generic;
@@ -79,28 +78,25 @@ namespace MetadataExtractCore.Utilities
                             return ".ppt";
                     }
                 }
-                ZipFile zipFile = null;
                 try
                 {
-                    zipFile = ZipFile.Read(stmFile);
-                    foreach (var s in zipFile.EntryFileNames)
+                    using (SafeZip zipFile = SafeZip.Open(stmFile))
                     {
-                        if (s.StartsWith("word"))
-                            return ".docx";
-                        if (s.StartsWith("xl"))
-                            return ".xlsx";
-                        if (s.StartsWith("ppt"))
-                            return ".pptx";
+                        foreach (var s in zipFile.EntryNames)
+                        {
+                            if (s.StartsWith("word"))
+                                return ".docx";
+                            if (s.StartsWith("xl"))
+                                return ".xlsx";
+                            if (s.StartsWith("ppt"))
+                                return ".pptx";
+                        }
+                        return ".odt";
                     }
-                    return ".odt";
                 }
                 catch
                 {
                     return String.Empty;
-                }
-                finally
-                {
-                    zipFile?.Dispose();
                 }
             }
             catch

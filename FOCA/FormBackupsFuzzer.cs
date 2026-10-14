@@ -1,4 +1,5 @@
 ﻿using System;
+using FOCA.Utilites;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -93,7 +94,7 @@ namespace FOCA
         {
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(item);
+                var request = TargetHttp.Create(item);
                 var response = (HttpWebResponse)request.GetResponse();
                 return (int)response.StatusCode;
             }
@@ -132,7 +133,7 @@ namespace FOCA
             int statusCode;
             try
             {
-                using (var httpClient = new HttpClient())
+                using (var httpClient = TargetHttp.CreateHttpClient())
                 {
                     var resp = await httpClient.GetAsync(url);
                     statusCode = (int) resp.StatusCode;

@@ -34,6 +34,12 @@ namespace FOCA.Database
 
         public static bool IsDatabaseAvailable(string connectionString)
         {
+            return IsDatabaseAvailable(connectionString, out _);
+        }
+
+        /// <param name="error">The innermost exception message when the database is not usable, otherwise null.</param>
+        public static bool IsDatabaseAvailable(string connectionString, out string error)
+        {
             if (String.IsNullOrWhiteSpace(connectionString))
                 throw new ArgumentNullException(nameof(connectionString));
 
@@ -46,10 +52,14 @@ namespace FOCA.Database
                     context.Database.Connection.Close();
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                while (e.InnerException != null)
+                    e = e.InnerException;
+                error = e.Message;
                 return false;
             }
+            error = null;
             return true;
         }
     }

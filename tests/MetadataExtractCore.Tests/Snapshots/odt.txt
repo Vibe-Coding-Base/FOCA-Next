@@ -4,6 +4,7 @@ OperatingSystem: Linux_X86_64
 Created: 2020-01-02
 Modified: 2021-06-07
 User: erin.creator
+User: exif.photographer
 User: frank.modifier
 User: grace.printer
 Email: it-support@acme.local
@@ -11,3 +12,8 @@ Path: C:\Users\erin.creator\Templates\
 Path: C:\Users\frank.modifier\Desktop\
 Path: http://192.168.10.20/
 Printer: \\PRINTSRV01\HP-LaserJet-4F
+Application: Adobe Photoshop CS6
+EmbeddedImage: photo.jpg
+  Model: Canon EOS 5D
+  User: exif.photographer
+  Application: Adobe Photoshop CS6

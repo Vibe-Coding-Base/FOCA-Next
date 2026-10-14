@@ -14,6 +14,7 @@ namespace FOCA
         private static bool Running;
         private const string FocaDatabaseName = "Foca";
         private const string SQLExpressConnectionString = @"Server=.\SQLEXPRESS;Initial Catalog=" + FocaDatabaseName + ";MultipleActiveResultSets=True;Integrated Security=true;Connection Timeout=3";
+        private static readonly string[] DefaultServerCandidates = { ".", @"(localdb)\MSSQLLocalDB" };
         public static string ProgramVersion = Application.ProductVersion;
         public static string ProgramName = Application.ProductName + " " + ProgramVersion;
 
@@ -92,9 +93,34 @@ namespace FOCA
                 connectionStringBuilder = new SqlConnectionStringBuilder(SQLExpressConnectionString);
             }
 
-            while (!FocaContextDb.IsDatabaseAvailable(connectionStringBuilder.ToString()))
+            string dbError;
+            if (!FocaContextDb.IsDatabaseAvailable(connectionStringBuilder.ToString(), out dbError)
+                && connectionStringBuilder.DataSource.Equals(@".\SQLEXPRESS", StringComparison.OrdinalIgnoreCase))
             {
-                splashScreen.Invoke((MethodInvoker)(() => MessageBox.Show(splashScreen, "FOCA needs a SQL database. Please setup your connection and try again.", "Database not found", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                // The shipped default points at a named SQLEXPRESS instance; many machines run the default
+                // instance or LocalDB instead, so try those before asking the user.
+                foreach (string candidate in DefaultServerCandidates)
+                {
+                    var candidateBuilder = new SqlConnectionStringBuilder(connectionStringBuilder.ToString()) { DataSource = candidate };
+                    if (candidate.StartsWith("(localdb)", StringComparison.OrdinalIgnoreCase))
+                        candidateBuilder.ConnectTimeout = Math.Max(candidateBuilder.ConnectTimeout, 30); // LocalDB starts on demand
+                    if (FocaContextDb.IsDatabaseAvailable(candidateBuilder.ToString()))
+                    {
+                        connectionStringBuilder = candidateBuilder;
+                        csUpdated = true;
+                        dbError = null;
+                        break;
+                    }
+                }
+            }
+
+            while (dbError != null && !FocaContextDb.IsDatabaseAvailable(connectionStringBuilder.ToString(), out dbError))
+            {
+                string message = "FOCA needs a SQL database. Please setup your connection and try again."
+                    + Environment.NewLine + Environment.NewLine
+                    + "Server: " + connectionStringBuilder.DataSource + Environment.NewLine
+                    + "Error: " + dbError;
+                splashScreen.Invoke((MethodInvoker)(() => MessageBox.Show(splashScreen, message, "Database not available", MessageBoxButtons.OK, MessageBoxIcon.Error)));
 
                 // Display the connection dialog
                 using (DataConnectionDialog dlg = new DataConnectionDialog(connectionStringBuilder))
@@ -156,9 +182,9 @@ namespace FOCA
 
         private static void InitializeServicePointManager()
         {
-            ServicePointManager.ServerCertificateValidationCallback += (s, c, ch, ssl) => true;
-
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            // Let the OS choose the TLS versions (TLS 1.2/1.3 on supported systems). Certificate validation stays on
+            // for third-party services; requests to audited hosts relax it individually through TargetHttp.
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
         }
     }
 }

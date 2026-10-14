@@ -8,6 +8,7 @@ using FOCA.Threads;
 using MetadataExtractCore.Analysis;
 using MetadataExtractCore.Diagrams;
 using MetadataExtractCore.Extractors;
+using FOCA.Utilites;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -2662,7 +2663,7 @@ namespace FOCA
                                 var location = currentDownload.DownloadUrl;
                                 do
                                 {
-                                    req = (HttpWebRequest)WebRequest.Create(location);
+                                    req = TargetHttp.Create(location);
                                     req.AllowAutoRedirect = false;
                                     req.CookieContainer = cc;
                                     try

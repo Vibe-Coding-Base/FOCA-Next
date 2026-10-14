@@ -1,3 +1,4 @@
+using FOCA.Utilites;
 using System;
 using System.IO;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace FOCA.Analysis.FingerPrinting
             WebResponse response;
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + "/");
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + "/");
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 3 * 1000; // 3 seconds
@@ -189,7 +190,7 @@ namespace FOCA.Analysis.FingerPrinting
             WebResponse response = null;
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + file);
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + file);
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 5 * 1000; // 5 seconds
@@ -225,7 +226,7 @@ namespace FOCA.Analysis.FingerPrinting
             var file = "/.htF0C4_" + new Random().Next(0, 999);
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + file);
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + file);
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 5 * 1000; // 5 seconds
@@ -257,7 +258,7 @@ namespace FOCA.Analysis.FingerPrinting
             var file = "/F0C4_" + new Random().Next(0, 999);
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + file);
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + file);
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 5 * 1000; // 5 seconds
@@ -291,7 +292,7 @@ namespace FOCA.Analysis.FingerPrinting
 
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + file);
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + file);
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 8 * 1000; // 8 seconds
@@ -358,7 +359,7 @@ namespace FOCA.Analysis.FingerPrinting
 
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(httpProtocol + Host + ":" + Port + file);
+                var request = TargetHttp.Create(httpProtocol + Host + ":" + Port + file);
                 request.KeepAlive = false;
                 request.AllowAutoRedirect = false;
                 request.Timeout = 8 * 1000; // 8 seconds
@@ -507,8 +508,10 @@ namespace FOCA.Analysis.FingerPrinting
             FileStream fs = null;
             try
             {
-                fs = new FileStream(System.IO.Path.Combine(certificatesFullPath, sourceRequest.Address.Host + "_" + aux_certName.Replace('*', '%') + ".crt"),
-                    FileMode.Create);
+                // The CN comes from the remote server: strip anything that could escape the certificates folder.
+                string fileName = sourceRequest.Address.Host + "_" + aux_certName.Replace('*', '%') + ".crt";
+                fileName = string.Concat(fileName.Select(c => System.IO.Path.GetInvalidFileNameChars().Contains(c) ? '_' : c)).Replace("..", "_");
+                fs = new FileStream(System.IO.Path.Combine(certificatesFullPath, fileName), FileMode.Create);
                 fs.Write(certificate.GetRawCertData(), 0, certificate.GetRawCertData().Length);
             }
             catch

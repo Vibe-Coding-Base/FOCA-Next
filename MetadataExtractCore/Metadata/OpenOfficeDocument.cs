@@ -1,4 +1,3 @@
-using Ionic.Zip;
 using MetadataExtractCore.Analysis;
 using MetadataExtractCore.Diagrams;
 using MetadataExtractCore.Utilities;
@@ -32,60 +31,50 @@ namespace MetadataExtractCore.Extractors
             try
             {
                 this.foundMetadata = new FileMetadata();
-                using (ZipFile zip = ZipFile.Read(this.fileStream))
+                using (SafeZip zip = SafeZip.Open(this.fileStream))
                 {
                     string strFile = "meta.xml";
-                    if (zip.EntryFileNames.Contains(strFile))
+                    if (zip.Contains(strFile))
                     {
-                        using (Stream stmXML = new MemoryStream())
+                        using (Stream stmXML = zip.ReadEntry(strFile))
                         {
-                            zip[strFile].Extract(stmXML);
-                            stmXML.Seek(0, SeekOrigin.Begin);
                             AnalizeFileMeta(stmXML);
                         }
                     }
                     strFile = "settings.xml";
-                    if (zip.EntryFileNames.Contains(strFile))
+                    if (zip.Contains(strFile))
                     {
-                        using (Stream stmXML = new MemoryStream())
+                        using (Stream stmXML = zip.ReadEntry(strFile))
                         {
-                            zip[strFile].Extract(stmXML);
-                            stmXML.Seek(0, SeekOrigin.Begin);
                             analizeFileSettings(stmXML);
                         }
                     }
                     strFile = "content.xml";
-                    if (zip.EntryFileNames.Contains(strFile))
+                    if (zip.Contains(strFile))
                     {
-                        using (Stream stmXML = new MemoryStream())
+                        using (Stream stmXML = zip.ReadEntry(strFile))
                         {
-                            zip[strFile].Extract(stmXML);
-                            stmXML.Seek(0, SeekOrigin.Begin);
                             AnalizeFileContent(stmXML);
                         }
                     }
                     strFile = "VersionList.xml";
-                    if (zip.EntryFileNames.Contains(strFile))
+                    if (zip.Contains(strFile))
                     {
-                        using (Stream stmXML = new MemoryStream())
+                        using (Stream stmXML = zip.ReadEntry(strFile))
                         {
-                            zip[strFile].Extract(stmXML);
-                            stmXML.Seek(0, SeekOrigin.Begin);
                             AnalizeFileVersionList(stmXML, zip);
                         }
                     }
                     //Extrae inforamción EXIF de las imágenes embebidas en el documento
-                    foreach (string strFileName in zip.EntryFileNames)
+                    foreach (string strFileName in zip.EntryNames)
                     {
                         string strFileNameLo = strFileName.ToLower();
                         //Filtro que obtiene las imagenes *.jpg, *.jpeg dentro de la carpeta "Pictures/"
                         if (strFileNameLo.StartsWith("pictures/") &&
                             (strFileNameLo.EndsWith(".jpg") || strFileNameLo.EndsWith(".jpeg") || strFileNameLo.EndsWith(".png")))
                         {
-                            using (Stream stmXML = new MemoryStream())
+                            using (Stream stmXML = zip.ReadEntry(strFileName))
                             {
-                                zip[strFile].Extract(stmXML);
-                                stmXML.Seek(0, SeekOrigin.Begin);
                                 using (EXIFDocument eDoc = new EXIFDocument(stmXML))
                                 {
                                     FileMetadata exifMetadata = eDoc.AnalyzeFile();
@@ -400,7 +389,7 @@ namespace MetadataExtractCore.Extractors
         /// </summary>
         /// <param name="stm">Stream que contiene el fichero VersionList.xml</param>
         /// <param name="zip">Fichero zip que contiene las versiones antiguas embebidas</param>
-        private void AnalizeFileVersionList(Stream stm, ZipFile zip)
+        private void AnalizeFileVersionList(Stream stm, SafeZip zip)
         {
             try
             {
@@ -421,12 +410,10 @@ namespace MetadataExtractCore.Extractors
                             vai.Date = d;
                         }
                         String strFile = "Versions/" + xn.Attributes["VL:title"].Value;
-                        if (zip.EntryFileNames.Contains(strFile))
+                        if (zip.Contains(strFile))
                         {
-                            using (Stream stmXML = new MemoryStream())
+                            using (Stream stmXML = zip.ReadEntry(strFile))
                             {
-                                zip[strFile].Extract(stmXML);
-                                stmXML.Seek(0, SeekOrigin.Begin);
                                 using (OpenOfficeDocument ooDoc = new OpenOfficeDocument(stmXML, strExtlo))
                                 {
                                     vai.Metadata = ooDoc.AnalyzeFile();

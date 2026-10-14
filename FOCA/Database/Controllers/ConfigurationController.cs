@@ -1,5 +1,7 @@
-﻿using System;
+﻿using FOCA.Utilites;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace FOCA.Database.Controllers
@@ -12,17 +14,22 @@ namespace FOCA.Database.Controllers
             {
                 using (FocaContextDb context = new FocaContextDb())
                 {
-                    var config = context.Configurations.FirstOrDefault() ?? new Configuration();
+                    var config = context.Configurations.FirstOrDefault();
+                    if (config == null)
+                    {
+                        config = new Configuration();
+                        context.Configurations.Add(config);
+                    }
 
                     config.AvaliableTechExtensions = item.AvaliableTechExtensions;
-                    config.BingApiKey = item.BingApiKey;
+                    config.BingApiKey = SecretProtector.Protect(item.BingApiKey);
                     config.DefaultDnsCacheSnooping = item.DefaultDnsCacheSnooping;
                     config.FingerPrintingAllFtp = item.FingerPrintingAllFtp;
                     config.FingerPrintingAllHttp = item.FingerPrintingAllHttp;
                     config.FingerPrintingAllSmtp = item.FingerPrintingAllSmtp;
                     config.FingerPrintingDns = item.FingerPrintingDns;
                     config.GoogleApiCx = item.GoogleApiCx;
-                    config.GoogleApiKey = item.GoogleApiKey;
+                    config.GoogleApiKey = SecretProtector.Protect(item.GoogleApiKey);
                     config.MaxRecursion = item.MaxRecursion;
                     config.SimultaneousDownloads = item.SimultaneousDownloads;
                     config.ProjectConfigFile = item.ProjectConfigFile;
@@ -31,9 +38,9 @@ namespace FOCA.Database.Controllers
                     config.UseHead = item.UseHead;
                     config.SelectedTechExtensions = item.SelectedTechExtensions;
                     config.SPathsPlugins = item.SPathsPlugins;
-                    config.ShodanApiKey = item.ShodanApiKey;
-                    config.DiarioAPIKey = item.DiarioAPIKey;
-                    config.DiarioAPISecret = item.DiarioAPISecret;
+                    config.ShodanApiKey = SecretProtector.Protect(item.ShodanApiKey);
+                    config.DiarioAPIKey = SecretProtector.Protect(item.DiarioAPIKey);
+                    config.DiarioAPISecret = SecretProtector.Protect(item.DiarioAPISecret);
 
                     context.SaveChanges();
                 }
@@ -48,8 +55,13 @@ namespace FOCA.Database.Controllers
         {
             using (FocaContextDb context = new FocaContextDb())
             {
-                Configuration config = context.Configurations.FirstOrDefault() ?? LoadDefaultConfig();
+                Configuration config = context.Configurations.AsNoTracking().FirstOrDefault() ?? LoadDefaultConfig();
 
+                config.BingApiKey = SecretProtector.Unprotect(config.BingApiKey);
+                config.GoogleApiKey = SecretProtector.Unprotect(config.GoogleApiKey);
+                config.ShodanApiKey = SecretProtector.Unprotect(config.ShodanApiKey);
+                config.DiarioAPIKey = SecretProtector.Unprotect(config.DiarioAPIKey);
+                config.DiarioAPISecret = SecretProtector.Unprotect(config.DiarioAPISecret);
                 return config;
             }
         }

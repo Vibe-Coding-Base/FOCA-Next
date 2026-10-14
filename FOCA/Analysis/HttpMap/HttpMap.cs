@@ -5,6 +5,7 @@ using FOCA.ModifiedComponents;
 using FOCA.TaskManager;
 using MetadataExtractCore.Diagrams;
 using Newtonsoft.Json;
+using FOCA.Utilites;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -125,7 +126,7 @@ namespace FOCA.Analysis.HttpMap
 
                 try
                 {
-                    HttpWebRequest robotsRequest = HttpWebRequest.CreateHttp(robotspath);
+                    HttpWebRequest robotsRequest = TargetHttp.Create(robotspath);
                     robotsRequest.AllowAutoRedirect = false;
                     using (HttpWebResponse response = (HttpWebResponse)robotsRequest.GetResponse())
                     {
