@@ -64,7 +64,7 @@ jobs:
       - name: Combine checksums
         run: cat artifacts/SHA256SUMS-* > artifacts/SHA256SUMS 2>/dev/null || true
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
