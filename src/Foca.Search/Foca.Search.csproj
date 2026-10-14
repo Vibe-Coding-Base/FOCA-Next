@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Search engine clients (Google, Bing, DuckDuckGo, Google/Bing APIs, Shodan). -->
+  <PropertyGroup>
+    <TargetFrameworks>net48;net10.0</TargetFrameworks>
+    <!-- Namespaces stay FOCA.Searcher / SearcherCore: FOCA Classic compiles against them -->
+    <RootNamespace>SearcherCore</RootNamespace>
+    <!-- HttpWebRequest is obsolete on .NET 10 but is the implementation shared with net48 -->
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Customsearch.v1" />
+    <PackageReference Include="HtmlAgilityPack" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+</Project>

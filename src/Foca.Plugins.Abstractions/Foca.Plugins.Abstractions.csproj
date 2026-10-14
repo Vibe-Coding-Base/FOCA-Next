@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Contract for FOCA Next plugins (API v2). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Foca.Plugins</RootNamespace>
+    <PackageId>Foca.Plugins.Abstractions</PackageId>
+    <Version>2.0.0</Version>
+    <Description>Contract for FOCA Next plugins (API v2): UI-framework neutral commands, panels and analyzers.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Foca.Core\Foca.Core.csproj" />
+  </ItemGroup>
+
+</Project>

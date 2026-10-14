@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Metadata extractors (Office, OpenDocument, PDF, images, SVG, InDesign, RDP/ICA...). -->
+  <PropertyGroup>
+    <!-- net48 is kept for FOCA Classic (legacy/); net10.0 runs on Windows, Linux and macOS -->
+    <TargetFrameworks>net48;net10.0</TargetFrameworks>
+    <RootNamespace>Foca.Metadata</RootNamespace>
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="resources\*.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MetadataExtractor" />
+    <PackageReference Include="PDFsharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+    <PackageReference Include="System.IO.Packaging" />
+  </ItemGroup>
+
+</Project>

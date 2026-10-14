@@ -1,0 +1,15 @@
+<Solution>
+  <!-- FOCA Classic: the original Windows (WinForms, .NET Framework 4.8) application, in maintenance mode. -->
+  <Project Path="FOCA/FOCA.csproj" />
+  <Project Path="PluginsAPI/PluginsAPI.csproj" />
+  <Folder Name="/shared/">
+    <Project Path="../src/Foca.Metadata/Foca.Metadata.csproj" />
+    <Project Path="../src/Foca.Search/Foca.Search.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/FocaPluginExample/FocaPluginExample/FocaPluginExample.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FOCA.Tests/FOCA.Tests.csproj" />
+  </Folder>
+</Solution>

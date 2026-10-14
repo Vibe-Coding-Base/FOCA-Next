@@ -26,7 +26,7 @@ public sealed class PluginLoaderTests : IDisposable
     private static string HelloOutput([CallerFilePath] string source = "")
     {
         string config = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)).Parent!.Name; // bin/<Configuration>/net10.0
-        return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(source)!, "..", "..", "Plugin example", "HelloPlugin", "bin", config, "net10.0"));
+        return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(source)!, "..", "..", "samples", "HelloPlugin", "bin", config, "net10.0"));
     }
 
     private string Install()
@@ -54,7 +54,7 @@ public sealed class PluginLoaderTests : IDisposable
         Install();
         var loader = new PluginLoader(pluginsDir, approvals);
         DiscoveredPlugin found = Assert.Single(loader.Discover());
-        foreach (string shared in new[] { "Foca.Plugins.Abstractions.dll", "Foca.Core.dll", "MetadataExtractCore.dll" })
+        foreach (string shared in new[] { "Foca.Plugins.Abstractions.dll", "Foca.Core.dll", "Foca.Metadata.dll" })
             Assert.False(File.Exists(Path.Combine(found.Folder, shared)), shared + " must come from the host");
         approvals.Approve(found.Manifest!.Id, found.Sha256!);
 

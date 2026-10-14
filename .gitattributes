@@ -1,2 +1,10 @@
+# Normalise line endings in the repository; check out with the platform's native endings
+* text=auto
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
 # Test corpus files must stay byte-identical on every OS (PDF xref offsets depend on line endings)
 tests/corpus/** binary
+*.ico binary
+*.png binary
+*.jpg binary

@@ -1,0 +1,6 @@
+<Project>
+  <!-- FOCA Classic projects declare package versions themselves (legacy csproj format). -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

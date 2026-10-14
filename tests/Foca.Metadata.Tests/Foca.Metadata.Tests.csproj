@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net10.0 runs everywhere; on Windows net48 also regenerates the corpus (System.Drawing) and guards FOCA Classic -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net48;net10.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="PDFsharp" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+    <Compile Remove="Fixtures.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Foca.Metadata\Foca.Metadata.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Snapshots\**\*.txt" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Foca.App/Foca.App.csproj" />
+    <Project Path="src/Foca.Cli/Foca.Cli.csproj" />
+    <Project Path="src/Foca.Core/Foca.Core.csproj" />
+    <Project Path="src/Foca.Data/Foca.Data.csproj" />
+    <Project Path="src/Foca.Metadata/Foca.Metadata.csproj" />
+    <Project Path="src/Foca.Plugins.Abstractions/Foca.Plugins.Abstractions.csproj" />
+    <Project Path="src/Foca.Plugins/Foca.Plugins.csproj" />
+    <Project Path="src/Foca.Search/Foca.Search.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Foca.App.Tests/Foca.App.Tests.csproj" />
+    <Project Path="tests/Foca.Core.Tests/Foca.Core.Tests.csproj" />
+    <Project Path="tests/Foca.Data.Tests/Foca.Data.Tests.csproj" />
+    <Project Path="tests/Foca.Metadata.Tests/Foca.Metadata.Tests.csproj" />
+    <Project Path="tests/Foca.Plugins.Tests/Foca.Plugins.Tests.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/HelloPlugin/HelloPlugin.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

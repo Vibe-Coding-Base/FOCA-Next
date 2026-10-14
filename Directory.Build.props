@@ -1,0 +1,19 @@
+<Project>
+  <!-- Shared by every project under src/, tests/ and samples/. legacy/ has its own (empty) file. -->
+  <PropertyGroup>
+    <Product>FOCA Next</Product>
+    <Authors>Tony</Authors>
+    <Company>FOCA Next</Company>
+    <Copyright>Copyright © 2026 Tony and FOCA Next contributors. Based on FOCA by ElevenPaths (Telefónica Tech).</Copyright>
+    <Description>FOCA Next: finds metadata and hidden information in documents. Cross-platform rewrite of FOCA.</Description>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <Version>1.0.0</Version>
+    <LangVersion>latest</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <Deterministic>true</Deterministic>
+    <!-- Package vulnerabilities are a build error, not a warning that scrolls by -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1902;NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

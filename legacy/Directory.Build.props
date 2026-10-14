@@ -1,0 +1,3 @@
+<Project>
+  <!-- FOCA Classic keeps its own build settings: stop inheriting the FOCA Next props from the repository root. -->
+</Project>
