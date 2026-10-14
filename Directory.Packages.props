@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Document extraction and search">
-    <PackageVersion Include="MetadataExtractor" Version="2.8.1" />
+    <PackageVersion Include="MetadataExtractor" Version="2.9.3" />
     <PackageVersion Include="PDFsharp" Version="6.1.1" />
     <PackageVersion Include="System.IO.Packaging" Version="9.0.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.71" />
