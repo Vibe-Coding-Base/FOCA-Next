@@ -9,8 +9,8 @@ the classic OSINT tool for finding metadata and hidden information in documents.
 The original FOCA has been unmaintained since 2021 and runs only on Windows with SQL Server;
 FOCA Next modernises it into a portable application, a command-line tool and a reusable library.
 
-[![CI](https://github.com/OWNER/foca-next/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/foca-next/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/OWNER/foca-next?include_prereleases)](https://github.com/OWNER/foca-next/releases)
+[![CI](https://github.com/Vibe-Coding-Base/FOCA-Next/actions/workflows/ci.yml/badge.svg)](https://github.com/Vibe-Coding-Base/FOCA-Next/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Vibe-Coding-Base/FOCA-Next?include_prereleases)](https://github.com/Vibe-Coding-Base/FOCA-Next/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-informational)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
@@ -96,7 +96,7 @@ fuzzer, the v1 plugins) remain available.
 ## Install
 
 Download the archive for your platform from the
-[**Releases**](https://github.com/OWNER/foca-next/releases) page and extract it. Each archive
+[**Releases**](https://github.com/Vibe-Coding-Base/FOCA-Next/releases) page and extract it. Each archive
 contains two self-contained programs — no .NET installation required:
 
 - `FOCA` / `FOCA.exe` — the desktop application.
@@ -160,7 +160,7 @@ Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download). On Windows, b
 additionally needs Visual Studio 2022+ or the Build Tools with the .NET desktop workload.
 
 ```sh
-git clone https://github.com/OWNER/foca-next.git
+git clone https://github.com/Vibe-Coding-Base/FOCA-Next.git
 cd foca-next
 
 # Build and test everything (FOCA Classic too, on Windows)
