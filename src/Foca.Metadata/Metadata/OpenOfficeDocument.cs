@@ -79,7 +79,7 @@ namespace Foca.Metadata.Extractors
                                 {
                                     FileMetadata exifMetadata = eDoc.AnalyzeFile();
                                     //Añadimos al diccionario la imagen encontrada junto con la información EXIF de la misma
-                                    this.foundMetadata.EmbeddedImages.Add(System.IO.Path.GetFileName(strFileName), exifMetadata);
+                                    this.foundMetadata.EmbeddedImages.Add(Functions.GetFileName(strFileName), exifMetadata);
                                     //Los usuarios de la información EXIF se añaden a los usuarios del documento
                                     this.foundMetadata.AddRange(exifMetadata.Users.ToArray());
                                     this.foundMetadata.AddRange(exifMetadata.Applications.ToArray());

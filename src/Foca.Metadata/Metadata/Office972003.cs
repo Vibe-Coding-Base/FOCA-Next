@@ -425,7 +425,7 @@ namespace Foca.Metadata.Extractors
                                         {
                                             String path = m.Value.Trim();
                                             this.foundMetadata.Add(new Diagrams.Path(PathAnalysis.CleanPath(path), true));
-                                            strImageName = System.IO.Path.GetFileName(path);
+                                            strImageName = Functions.GetFileName(path);
                                         }
                                     }
 

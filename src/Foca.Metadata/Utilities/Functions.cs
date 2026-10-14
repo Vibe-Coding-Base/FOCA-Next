@@ -163,7 +163,21 @@ namespace Foca.Metadata.Utilities
         /// <returns></returns>
         public static string GetPathFolder(string pathValue)
         {
-            return System.IO.Path.GetFileName(pathValue).Length == 0 ? pathValue : pathValue.Replace(System.IO.Path.GetFileName(pathValue), "");
+            string fileName = GetFileName(pathValue);
+            return fileName.Length == 0 ? pathValue : pathValue.Replace(fileName, "");
+        }
+
+        /// <summary>
+        /// File name of a path, treating both '\' and '/' as separators regardless of the OS.
+        /// Document metadata contains Windows paths, so System.IO.Path (which ignores '\' on
+        /// Linux/macOS) must not be used here. Matches Windows Path.GetFileName semantics.
+        /// </summary>
+        public static string GetFileName(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path ?? string.Empty;
+            int lastSeparator = Math.Max(path.LastIndexOf('\\'), path.LastIndexOf('/'));
+            return lastSeparator < 0 ? path : path.Substring(lastSeparator + 1);
         }
 
         /// <summary>

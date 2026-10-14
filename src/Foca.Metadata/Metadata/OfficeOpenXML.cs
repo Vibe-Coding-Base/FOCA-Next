@@ -165,7 +165,7 @@ namespace Foca.Metadata.Extractors
                             using (EXIFDocument eDoc = new EXIFDocument(new BoundedStream(pp.GetStream(FileMode.Open, FileAccess.Read))))
                             {
                                 FileMetadata exifMetadata = eDoc.AnalyzeFile();
-                                foundMetadata.EmbeddedImages.Add(System.IO.Path.GetFileName(strFileName), exifMetadata);
+                                foundMetadata.EmbeddedImages.Add(Functions.GetFileName(strFileName), exifMetadata);
                                 //Copiamos los metadatos sobre usuarios y Applications de la imagen al documento
                                 this.foundMetadata.AddRange(exifMetadata.Users.ToArray());
                                 this.foundMetadata.AddRange(exifMetadata.Applications.ToArray());
