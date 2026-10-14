@@ -92,6 +92,16 @@ namespace MetadataExtractCore.Extractors
                     return false;
                 }
             }
+
+            // [MS-CFB]: sectors are 512 (v3) or 4096 (v4) bytes and mini sectors 64 bytes. Table sizes come
+            // from the header and size allocations, so reject values larger than the file could hold.
+            if (this.ofh.SizeOfSector != 512 && this.ofh.SizeOfSector != 4096)
+                return false;
+            if (this.ofh.SizeOfShortSector != 64)
+                return false;
+            long sectorsInFile = this.stmDocument.Length / this.ofh.SizeOfSector + 1;
+            if (this.ofh.NumberOfSectorsSAT > sectorsInFile || this.ofh.NumberOfSectorsSSAT > sectorsInFile || this.ofh.NumberOfSectorsMSAT > sectorsInFile)
+                return false;
             return true;
         }
 
@@ -173,13 +183,39 @@ namespace MetadataExtractCore.Extractors
             }
         }
 
+        /// <summary>
+        /// Upper bound for walking any sector chain: a valid chain cannot be longer than the number of
+        /// sectors in the file, so exceeding it means a crafted, cyclic chain.
+        /// </summary>
+        private int MaxChainLength => (int)Math.Min(int.MaxValue, this.stmDocument.Length / Math.Max(1, (int)this.ofh.SizeOfShortSector) + 1);
+
+        private void CheckChainStep(ref int steps)
+        {
+            if (++steps > MaxChainLength)
+                throw new InvalidDataException("Cyclic sector chain in OLE document");
+        }
+
+        private static void ReadFully(Stream stream, byte[] buffer, int count)
+        {
+            int offset = 0;
+            while (offset < count)
+            {
+                int read = stream.Read(buffer, offset, count - offset);
+                if (read <= 0)
+                    throw new EndOfStreamException("Truncated OLE document");
+                offset += read;
+            }
+        }
+
         public void readDir()
         {
             BinaryReader br = new BinaryReader(this.stmDocument);
             this.DirEntries = new List<DirEntry>();
             Int32 NextSecID = this.ofh.FirstSecIDDirectory;
+            int steps = 0;
             while (NextSecID >= 0)
             {
+                CheckChainStep(ref steps);
                 this.stmDocument.Seek(SectorOffset(NextSecID), SeekOrigin.Begin);
 
                 for (int i = 0; i < (this.ofh.SizeOfSector / 128); i++)
@@ -215,11 +251,15 @@ namespace MetadataExtractCore.Extractors
             {
                 List<string> lstStreamPath = new List<string>(strStreamName.Split(new char[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries));
                 List<int> nodos = new List<int>();
+                var visited = new HashSet<int>();
                 nodos.Add(this.DirEntries[0].DirIDRootNodeEntry);
                 while (nodos.Count > 0)
                 {
                     int i = nodos[0];
                     nodos.RemoveAt(0);
+                    // crafted directories can point outside the table or back to visited nodes
+                    if (i < 0 || i >= this.DirEntries.Count || !visited.Add(i))
+                        continue;
                     String nombre = Encoding.Unicode.GetString(this.DirEntries[i].EntryName);
                     if (nombre.IndexOf('\0') > 0)
                         nombre = nombre.Substring(0, nombre.IndexOf('\0'));
@@ -258,11 +298,14 @@ namespace MetadataExtractCore.Extractors
             if (this.DirEntries.Count > 0)
             {
                 List<int> nodos = new List<int>();
+                var visited = new HashSet<int>();
                 nodos.Add(this.DirEntries[0].DirIDRootNodeEntry);
                 while (nodos.Count > 0)
                 {
                     int i = nodos[0];
                     nodos.RemoveAt(0);
+                    if (i < 0 || i >= this.DirEntries.Count || !visited.Add(i))
+                        continue;
                     String nombre = Encoding.Unicode.GetString(this.DirEntries[i].EntryName);
                     if (nombre.IndexOf('\0') > 0)
                         nombre = nombre.Substring(0, nombre.IndexOf('\0'));
@@ -289,21 +332,25 @@ namespace MetadataExtractCore.Extractors
                 Stream SSTATBytes = new MemoryStream();
                 Int32 NextSecID = this.DirEntries[0].FirstSecIDStream;
                 byte[] buffer = new byte[this.ofh.SizeOfSector];
+                int steps = 0;
 
                 while (NextSecID != (Int32)SecIDType.EOFSecID)
                 {
+                    CheckChainStep(ref steps);
                     this.stmDocument.Seek(SectorOffset(NextSecID), SeekOrigin.Begin);
-                    this.stmDocument.Read(buffer, 0, this.ofh.SizeOfSector);
+                    ReadFully(this.stmDocument, buffer, this.ofh.SizeOfSector);
                     SSTATBytes.Write(buffer, 0, this.ofh.SizeOfSector);
                     NextSecID = this.SAT[NextSecID];
                 }
                 NextSecID = de.FirstSecIDStream;
                 buffer = new byte[this.ofh.SizeOfShortSector];
+                steps = 0;
 
                 while (NextSecID != (Int32)SecIDType.EOFSecID)
                 {
+                    CheckChainStep(ref steps);
                     SSTATBytes.Seek(NextSecID * this.ofh.SizeOfShortSector, SeekOrigin.Begin);
-                    SSTATBytes.Read(buffer, 0, this.ofh.SizeOfShortSector);
+                    ReadFully(SSTATBytes, buffer, this.ofh.SizeOfShortSector);
                     s.Write(buffer, 0, this.ofh.SizeOfShortSector);
                     NextSecID = this.SSAT[NextSecID];
                 }
@@ -313,10 +360,12 @@ namespace MetadataExtractCore.Extractors
             {
                 Int32 NextSecID = de.FirstSecIDStream;
                 byte[] buffer = new byte[this.ofh.SizeOfSector];
+                int steps = 0;
                 while (NextSecID != (Int32)SecIDType.EOFSecID)
                 {
+                    CheckChainStep(ref steps);
                     this.stmDocument.Seek(SectorOffset(NextSecID), SeekOrigin.Begin);
-                    this.stmDocument.Read(buffer, 0, this.ofh.SizeOfSector);
+                    ReadFully(this.stmDocument, buffer, this.ofh.SizeOfSector);
                     s.Write(buffer, 0, this.ofh.SizeOfSector);
                     for (; this.SAT[NextSecID] == (Int32)SecIDType.FreeSecID; NextSecID++) ;
                     NextSecID = this.SAT[NextSecID];

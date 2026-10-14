@@ -204,6 +204,45 @@ namespace MetadataExtractCore.Tests
   <image xlink:href=""file:///C:/Users/ivan.designer/Pictures/background.png"" width=""10"" height=""10""/>
 </svg>");
 
+        /// <summary>
+        /// A structurally valid compound file (MS-CFB v3) whose directory sector chain loops 1 -> 2 -> 1.
+        /// </summary>
+        public static byte[] CyclicOle()
+        {
+            const int sector = 512;
+            var data = new byte[sector * 4];
+            using (var w = new BinaryWriter(new MemoryStream(data)))
+            {
+                w.Write(new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 });
+                w.Write(new byte[16]);              // CLSID
+                w.Write((ushort)0x003E);            // minor version
+                w.Write((ushort)3);                 // major version
+                w.Write((ushort)0xFFFE);            // byte order
+                w.Write((ushort)9);                 // sector shift: 512
+                w.Write((ushort)6);                 // mini sector shift: 64
+                w.Write(new byte[10]);              // reserved + directory sector count
+                w.Write(1);                         // FAT sectors
+                w.Write(1);                         // first directory sector
+                w.Write(0);                         // transaction signature
+                w.Write(4096);                      // mini stream cutoff
+                w.Write(-2);                        // first mini FAT sector (none)
+                w.Write(0);                         // mini FAT sectors
+                w.Write(-2);                        // first DIFAT sector (none)
+                w.Write(0);                         // DIFAT sectors
+                w.Write(0);                         // DIFAT[0]: FAT lives in sector 0
+                for (int i = 1; i < 109; i++)
+                    w.Write(-1);
+
+                w.Seek(sector, SeekOrigin.Begin);   // sector 0: FAT
+                w.Write(-3);                        // sector 0 is a FAT sector
+                w.Write(2);                         // directory: 1 -> 2
+                w.Write(1);                         //            2 -> 1 (cycle)
+                for (int i = 3; i < sector / 4; i++)
+                    w.Write(-1);
+            }
+            return data;
+        }
+
         public static byte[] Rdp() => Encoding.UTF8.GetBytes(string.Join("\r\n",
             "full address:s:ts01.acme.local",
             "gatewayhostname:s:rdgw.acme.local:443",

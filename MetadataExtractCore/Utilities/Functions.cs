@@ -228,8 +228,9 @@ namespace MetadataExtractCore.Utilities
         /// <param name="output"></param>
         public static void CopyStream(Stream input, Stream output)
         {
-            var lngInputPosition = input.Position;
-            var lngOutputPosition = output.Position;
+            // Package part streams on .NET Core are forward-only (inflating) streams without Position
+            var lngInputPosition = input.CanSeek ? input.Position : -1;
+            var lngOutputPosition = output.CanSeek ? output.Position : -1;
             var buffer = new byte[32768];
             while (true)
             {
@@ -238,8 +239,10 @@ namespace MetadataExtractCore.Utilities
                     break;
                 output.Write(buffer, 0, read);
             }
-            input.Position = lngInputPosition;
-            output.Position = lngOutputPosition;
+            if (lngInputPosition >= 0)
+                input.Position = lngInputPosition;
+            if (lngOutputPosition >= 0)
+                output.Position = lngOutputPosition;
         }
 
         /// <summary>

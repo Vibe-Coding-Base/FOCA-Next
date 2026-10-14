@@ -14,8 +14,11 @@ namespace MetadataExtractCore.Extractors
 {
     public class PDFDocument : XMPExtractor
     {
-        private static Regex pathRegex = new Regex(@"([a-z]:|\\\\)\\\\(([a-z0-9\s\-_\$&()ñÇ/n/r]+)\\\\)*[a-z0-9\s,;.\-_\$%&()=ñ{}Ç/n/r+@]+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static Regex emailsAndLinksRegex = new Regex(@"\((?<value>(mailto|https?):.*?)\)", RegexOptions.Singleline | RegexOptions.Compiled);
+        // The whole (untrusted) file is scanned with these patterns; the timeout bounds the nested
+        // quantifiers of pathRegex against crafted input (ReDoS). A timeout abandons the text scan only.
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
+        private static Regex pathRegex = new Regex(@"([a-z]:|\\\\)\\\\(([a-z0-9\s\-_\$&()ñÇ/n/r]+)\\\\)*[a-z0-9\s,;.\-_\$%&()=ñ{}Ç/n/r+@]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
+        private static Regex emailsAndLinksRegex = new Regex(@"\((?<value>(mailto|https?):.*?)\)", RegexOptions.Singleline | RegexOptions.Compiled, RegexTimeout);
 
         public PDFDocument(Stream stm) : base(stm)
         {
@@ -29,7 +32,7 @@ namespace MetadataExtractCore.Extractors
             try
             {
                 this.foundMetadata = new FileMetadata();
-                using (PdfDocument doc = PdfReader.Open(this.fileStream, PdfDocumentOpenMode.InformationOnly))
+                using (PdfDocument doc = PdfReader.Open(this.fileStream, PdfDocumentOpenMode.Import))
                 {
                     int imageNumber = 0;
                     //Read embedded images

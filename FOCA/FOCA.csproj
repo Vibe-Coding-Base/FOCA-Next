@@ -11,6 +11,8 @@
     <RootNamespace>FOCA</RootNamespace>
     <AssemblyName>FOCA</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <!-- Lets "dotnet restore" produce the assets Visual Studio's MSBuild expects for this legacy project -->
+    <RuntimeIdentifiers>win</RuntimeIdentifiers>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <SccProjectName>SAK</SccProjectName>
@@ -861,10 +863,15 @@
     <ProjectReference Include="..\MetadataExtractCore\MetadataExtractCore.csproj">
       <Project>{61736B0E-FFE6-45FC-B3F0-8B45F991A772}</Project>
       <Name>MetadataExtractCore</Name>
+      <!-- The shared libraries also target net10.0; the WinForms app only needs their .NET Framework build -->
+      <SetTargetFramework>TargetFramework=net48</SetTargetFramework>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Include="..\SearcherCore\SearcherCore\SearcherCore.csproj">
       <Project>{697AF2A1-3FC4-41DD-9798-BB316476275E}</Project>
       <Name>SearcherCore</Name>
+      <SetTargetFramework>TargetFramework=net48</SetTargetFramework>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

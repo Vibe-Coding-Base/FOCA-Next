@@ -5,17 +5,23 @@ on:
   pull_request:
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      # On Windows this also builds the WinForms application and its tests
       - name: Build and test
         shell: pwsh
         run: ./build.ps1 -Configuration Release
       - name: Vulnerable package audit
         shell: pwsh
         run: |
-          dotnet list tests/MetadataExtractCore.Tests/MetadataExtractCore.Tests.csproj package --vulnerable --include-transitive
+          dotnet list Foca.sln package --vulnerable --include-transitive | Tee-Object audit.txt
+          if (Select-String -Path audit.txt -Pattern '\b(High|Critical)\b' -Quiet) { throw 'Vulnerable packages found' }

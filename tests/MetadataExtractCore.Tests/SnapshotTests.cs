@@ -28,19 +28,7 @@ namespace MetadataExtractCore.Tests
             new object[] { "jpg", ".jpg" },
         };
 
-        private static byte[] Build(string name)
-        {
-            switch (name)
-            {
-                case "docx": return Fixtures.Docx();
-                case "odt": return Fixtures.Odt();
-                case "pdf": return Fixtures.Pdf();
-                case "svg": return Fixtures.Svg();
-                case "rdp": return Fixtures.Rdp();
-                case "jpg": return Fixtures.Jpeg();
-                default: throw new ArgumentOutOfRangeException(nameof(name));
-            }
-        }
+        private static byte[] Build(string name) => Corpus.Get("sample." + name);
 
         [Theory]
         [MemberData(nameof(Cases))]

@@ -64,7 +64,7 @@ namespace MetadataExtractCore.Tests
         [InlineData("pdf", ".pdf")]
         public void GetFormatFileDetectsContainerType(string fixture, string expected)
         {
-            byte[] data = fixture == "docx" ? Fixtures.Docx() : fixture == "odt" ? Fixtures.Odt() : Fixtures.Pdf();
+            byte[] data = Corpus.Get("sample." + fixture);
             using (var ms = new MemoryStream(data))
                 Assert.Equal(expected, Functions.GetFormatFile(ms));
         }
