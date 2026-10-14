@@ -53,10 +53,11 @@ namespace Foca.Metadata.Extractors
                     {
                         if (this.foundMetadata.GPS == null)
                         {
-                            MetadataExtractor.GeoLocation gpsLocation = gps.GetGeoLocation();
+                            // MetadataExtractor 2.9 made GeoLocation a struct: GetGeoLocation() returns GeoLocation?
+                            MetadataExtractor.GeoLocation? gpsLocation = gps.GetGeoLocation();
                             if (gpsLocation != null)
                             {
-                                this.foundMetadata.GPS = new GeoLocation(gpsLocation.ToDmsString(), gpsLocation.Longitude, gpsLocation.Latitude);
+                                this.foundMetadata.GPS = new GeoLocation(gpsLocation.Value.ToDmsString(), gpsLocation.Value.Longitude, gpsLocation.Value.Latitude);
                                 if (gps.ContainsTag(MetadataExtractor.Formats.Exif.GpsDirectory.TagAltitude))
                                 {
                                     this.foundMetadata.GPS.Altitude = $"{gps.GetDescription(MetadataExtractor.Formats.Exif.GpsDirectory.TagAltitude)} ({gps.GetDescription(MetadataExtractor.Formats.Exif.GpsDirectory.TagAltitudeRef)})"; ;
