@@ -16,7 +16,7 @@ namespace Foca.Metadata.Extractors
     {
         // The whole (untrusted) file is scanned with these patterns; the timeout bounds the nested
         // quantifiers of pathRegex against crafted input (ReDoS). A timeout abandons the text scan only.
-        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
+        // RegexTimeout is inherited from DocumentExtractor
         private static Regex pathRegex = new Regex(@"([a-z]:|\\\\)\\\\(([a-z0-9\s\-_\$&()ñÇ/n/r]+)\\\\)*[a-z0-9\s,;.\-_\$%&()=ñ{}Ç/n/r+@]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
         private static Regex emailsAndLinksRegex = new Regex(@"\((?<value>(mailto|https?):.*?)\)", RegexOptions.Singleline | RegexOptions.Compiled, RegexTimeout);
 

@@ -2,12 +2,109 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Foca.App.App"
              RequestedThemeVariant="Default">
-  <Application.Styles>
-    <FluentTheme />
-    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-  </Application.Styles>
+
   <Application.Resources>
-    <!-- FOCA brand colour used for icons and accents in the original application -->
-    <SolidColorBrush x:Key="FocaAccent" Color="#A0154E" />
+    <ResourceDictionary>
+      <!-- FOCA brand magenta, used as the Fluent accent across the app -->
+      <Color x:Key="FocaAccentColor">#C2185B</Color>
+      <SolidColorBrush x:Key="FocaAccent" Color="{StaticResource FocaAccentColor}" />
+
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="CardBorder" Color="#E2E3E6" />
+          <SolidColorBrush x:Key="AppBackground" Color="#F2F3F5" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="CardBackground" Color="#262629" />
+          <SolidColorBrush x:Key="CardBorder" Color="#3A3A3E" />
+          <SolidColorBrush x:Key="AppBackground" Color="#1A1A1D" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
   </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <!-- Make the Fluent accent the FOCA magenta in both variants -->
+        <ColorPaletteResources x:Key="Light" Accent="#C2185B" RegionColor="#F5F6F8" />
+        <ColorPaletteResources x:Key="Dark" Accent="#E05285" RegionColor="#1C1C1F" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+    <!-- A grouped settings/content block -->
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- A small field label above an input -->
+    <Style Selector="TextBlock.field">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.75" />
+      <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+
+    <!-- Section heading -->
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!-- Primary (accent-filled) button -->
+    <Style Selector="Button.accent">
+      <Setter Property="Background" Value="{DynamicResource FocaAccent}" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="16,7" />
+    </Style>
+    <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource FocaAccent}" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="Opacity" Value="0.88" />
+    </Style>
+
+    <!-- Borderless text button (All / None, inline actions) -->
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource FocaAccent}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="4,2" />
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+    </Style>
+
+    <!-- Rounder default buttons and inputs -->
+    <Style Selector="Button">
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="12,6" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <!-- Comfortable rows in all grids -->
+    <Style Selector="DataGrid">
+      <Setter Property="RowHeight" Value="30" />
+      <Setter Property="GridLinesVisibility" Value="Horizontal" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </Application.Styles>
 </Application>

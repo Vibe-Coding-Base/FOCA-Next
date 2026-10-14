@@ -51,7 +51,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private NavigationNode? selectedNode;
 
-    public string WindowTitle => CurrentProject == null ? "FOCA Open Source" : $"{CurrentProject.Name} - FOCA Open Source";
+    public string WindowTitle => CurrentProject == null ? "FOCA Next" : $"{CurrentProject.Name} - FOCA Next";
 
     public bool HasProject => CurrentProject != null;
 
@@ -118,6 +118,29 @@ public sealed partial class MainWindowViewModel : ObservableObject
         BuildTree();
     }
 
+    /// <summary>API keys for the optional services (search, Shodan), held in memory in plain form.</summary>
+    public ApiCredentials Credentials => settings.Credentials;
+
+    public void SaveSettings()
+    {
+        try
+        {
+            settings.Save();
+        }
+        catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+        {
+            Log.Add("FOCA", LogSeverity.Error, "Settings could not be saved: " + e.Message);
+        }
+    }
+
+    public void RefreshSearchEngines() => DocumentsPanel.RefreshEngines();
+
+    [RelayCommand]
+    private void ShowOptions()
+    {
+        CurrentPanel = new OptionsPanelViewModel(this, settings.Credentials);
+    }
+
     public static string DefaultDownloadFolder(string projectName)
     {
         string safe = string.Concat(projectName.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
@@ -137,6 +160,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             await dialogs.ShowAsync("Database not available", e.Message);
             return;
         }
+        DocumentsPanel.RefreshEngines();
         await LoadPluginsAsync(askApproval: false);
         await NewProjectAsync();
     }
@@ -351,10 +375,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
             plugins.OpenProject(new DesktopProjectContext(this, CurrentProject));
     }
 
+    public static string Version =>
+        typeof(MainWindowViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+
     [RelayCommand]
-    private Task AboutAsync() => dialogs.ShowAsync("About FOCA",
-        "FOCA Open Source - Fingerprinting Organizations with Collected Archives.\n\n" +
-        "Finds metadata and hidden information in documents. Runs on Windows, Linux and macOS.\n" +
+    private Task AboutAsync() => dialogs.ShowAsync("About FOCA Next",
+        $"FOCA Next {Version}\n" +
+        "Fingerprinting Organizations with Collected Archives.\n\n" +
+        "A cross-platform fork and rewrite of FOCA, which has been unmaintained since 2021. " +
+        "FOCA Next runs on Windows, Linux and macOS, stores projects in SQLite (no SQL Server required), " +
+        "adds Internet Archive and Certificate Transparency sources, a command-line interface, a new plugin " +
+        "API, and hardens the document parsers against hostile files.\n\n" +
+        "Author: Tony\n" +
+        "Based on FOCA by ElevenPaths (Telefónica Tech).\n" +
         "Licensed under the GNU GPL v3.");
 
     private sealed class DesktopProjectContext : IProjectContext

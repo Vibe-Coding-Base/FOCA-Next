@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Foca.Metadata\Foca.Metadata.csproj" />
     <ProjectReference Include="..\Foca.Search\Foca.Search.csproj" />
   </ItemGroup>

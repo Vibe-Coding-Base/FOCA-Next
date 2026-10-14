@@ -64,6 +64,21 @@ public sealed partial class DocumentsPanelViewModel : ObservableObject
         new("Wayback Machine", true),
     };
 
+    /// <summary>Adds or removes the API-based engines depending on which keys are configured.</summary>
+    public void RefreshEngines()
+    {
+        void Toggle(string name, bool present)
+        {
+            bool exists = Engines.Any(e => e.Name == name);
+            if (present && !exists)
+                Engines.Add(new SelectableOption(name, false));
+            else if (!present && exists)
+                Engines.Remove(Engines.First(e => e.Name == name));
+        }
+        Toggle("Google API", main.Credentials.HasGoogleApi);
+        Toggle("Bing API", main.Credentials.HasBingApi);
+    }
+
     public ObservableCollection<SelectableOption> FileTypes { get; } = new(Extensions.Select(e => new SelectableOption(e, e is "doc" or "docx" or "pdf" or "xls" or "xlsx" or "ppt" or "pptx" or "odt")));
 
     public ObservableCollection<DocumentRow> Rows { get; } = new();
@@ -184,11 +199,14 @@ public sealed partial class DocumentsPanelViewModel : ObservableObject
     {
         foreach (SelectableOption engine in Engines.Where(e => e.IsSelected))
         {
+            ApiCredentials creds = main.Credentials;
             IDocumentSearchProvider provider = engine.Name switch
             {
                 "Google" => SearchEngineProvider.Create(SearchEngine.GoogleWeb),
                 "Bing" => SearchEngineProvider.Create(SearchEngine.BingWeb),
                 "DuckDuckGo" => SearchEngineProvider.Create(SearchEngine.DuckDuckGo),
+                "Google API" => SearchEngineProvider.Create(SearchEngine.GoogleApi, creds.GoogleApiKey, creds.GoogleCx),
+                "Bing API" => SearchEngineProvider.Create(SearchEngine.BingApi, creds.BingApiKey),
                 _ => new WaybackProvider(services),
             };
             if (provider is SearchEngineProvider s)

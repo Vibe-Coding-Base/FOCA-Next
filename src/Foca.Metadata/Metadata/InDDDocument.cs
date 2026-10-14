@@ -10,7 +10,7 @@ namespace Foca.Metadata.Extractors
     public class InDDDocument : XMPExtractor
     {
         // The whole untrusted file is scanned: bound every pattern (nested quantifiers, ReDoS)
-        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
+        // RegexTimeout is inherited from DocumentExtractor
         private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.Compiled;
         private static readonly Regex PathRegex = new Regex(@"@([a-z]:|\\)\\(([a-z0-9\s\-_\$&()ñÇ/n/r]+)\\)*[a-z0-9\s,;.\-_\$%&()=ñ{}Ç/n/r+@]+", Options, RegexTimeout);
         private static readonly Regex PrinterRegex = new Regex(@"winspool\0([a-z]:|\\)\\(([a-z0-9\s\-_\$&()ñÇ/n/r]+)\\)*[a-z0-9\s,;.\-_\$%&()=ñ{}Ç/n/r+@]+", Options, RegexTimeout);

@@ -22,6 +22,9 @@
     <DataTemplate DataType="vm:DomainsPanelViewModel">
       <views:DomainsPanelView />
     </DataTemplate>
+    <DataTemplate DataType="vm:OptionsPanelViewModel">
+      <views:OptionsPanelView />
+    </DataTemplate>
   </Window.DataTemplates>
 
   <DockPanel>
@@ -38,6 +41,9 @@
           <MenuItem Header="JSON..." Command="{Binding ExportReportCommand}" CommandParameter="Json" />
           <MenuItem Header="CSV..." Command="{Binding ExportReportCommand}" CommandParameter="Csv" />
         </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_Tools">
+        <MenuItem Header="_Options (API keys)..." Command="{Binding ShowOptionsCommand}" />
       </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="Theme">
@@ -67,47 +73,58 @@
             VerticalAlignment="Center" ToolTip.Tip="Switch between system, light and dark appearance" />
     </Grid>
 
-    <Grid RowDefinitions="*,5,180" Margin="4">
-      <Grid ColumnDefinitions="260,5,*">
-        <!-- Project tree -->
-        <TreeView ItemsSource="{Binding Tree}" SelectedItem="{Binding SelectedNode}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-          <TreeView.ItemContainerTheme>
-            <ControlTheme TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}" x:DataType="vm:NavigationNode">
-              <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
-            </ControlTheme>
-          </TreeView.ItemContainerTheme>
-          <TreeView.ItemTemplate>
-            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:NavigationNode">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding Icon}" />
-                <TextBlock Text="{Binding Title}" />
+    <Border Background="{DynamicResource AppBackground}">
+      <Grid RowDefinitions="*,6,190" Margin="10">
+        <Grid ColumnDefinitions="270,6,*">
+          <!-- Project tree -->
+          <Border Classes="card" Padding="4">
+            <TreeView ItemsSource="{Binding Tree}" SelectedItem="{Binding SelectedNode}" BorderThickness="0" Background="Transparent">
+              <TreeView.ItemContainerTheme>
+                <ControlTheme TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}" x:DataType="vm:NavigationNode">
+                  <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                </ControlTheme>
+              </TreeView.ItemContainerTheme>
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:NavigationNode">
+                  <StackPanel Orientation="Horizontal" Spacing="7">
+                    <TextBlock Text="{Binding Icon}" />
+                    <TextBlock Text="{Binding Title}" />
+                  </StackPanel>
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+          </Border>
+          <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="Transparent" />
+          <Border Grid.Column="2" Classes="card">
+            <ContentControl Content="{Binding CurrentPanel}" />
+          </Border>
+        </Grid>
+
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="Transparent" />
+
+        <!-- Log panel -->
+        <Border Grid.Row="2" Classes="card" Padding="10">
+          <DockPanel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+              <TextBlock Text="Log" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                <Button Content="{Binding Log.AutoScrollText}" Command="{Binding Log.ToggleAutoScrollCommand}" Classes="link" />
+                <Button Content="Clear" Command="{Binding Log.ClearCommand}" Classes="link" />
+                <Button Content="Save to file" Command="{Binding Log.SaveCommand}" Classes="link" />
               </StackPanel>
-            </TreeDataTemplate>
-          </TreeView.ItemTemplate>
-        </TreeView>
-        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
-        <ContentControl Grid.Column="2" Content="{Binding CurrentPanel}" Margin="8,0,0,0" />
+            </Grid>
+            <DataGrid x:Name="LogGrid" ItemsSource="{Binding Log.Entries}" IsReadOnly="True" AutoGenerateColumns="False"
+                      CanUserSortColumns="False" HeadersVisibility="Column">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding TimeText}" Width="90" />
+                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="130" />
+                <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="90" />
+                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </Border>
       </Grid>
-
-      <GridSplitter Grid.Row="1" ResizeDirection="Rows" />
-
-      <!-- Log panel -->
-      <DockPanel Grid.Row="2">
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-          <Button Content="{Binding Log.AutoScrollText}" Command="{Binding Log.ToggleAutoScrollCommand}" />
-          <Button Content="Clear" Command="{Binding Log.ClearCommand}" />
-          <Button Content="Save log to File" Command="{Binding Log.SaveCommand}" />
-        </StackPanel>
-        <DataGrid x:Name="LogGrid" ItemsSource="{Binding Log.Entries}" IsReadOnly="True" AutoGenerateColumns="False"
-                  GridLinesVisibility="Horizontal" CanUserSortColumns="False" HeadersVisibility="Column">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Time" Binding="{Binding TimeText}" Width="90" />
-            <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="120" />
-            <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
-            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
-          </DataGrid.Columns>
-        </DataGrid>
-      </DockPanel>
-    </Grid>
+    </Border>
   </DockPanel>
 </Window>

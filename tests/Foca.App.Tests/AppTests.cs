@@ -89,6 +89,41 @@ public sealed class AppTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void ApiKeysAreStoredEncryptedAndRoundTrip()
+    {
+        string file = Path.Combine(temp, "creds.json");
+        AppSettings s = AppSettings.Load(file);
+        s.Credentials.GoogleApiKey = "super-secret-google-key";
+        s.Credentials.GoogleCx = "cx123";
+        s.Credentials.ShodanApiKey = "shodan-key";
+        s.Save();
+
+        string onDisk = File.ReadAllText(file);
+        Assert.DoesNotContain("super-secret-google-key", onDisk);
+        Assert.DoesNotContain("shodan-key", onDisk);
+
+        AppSettings reloaded = AppSettings.Load(file);
+        Assert.Equal("super-secret-google-key", reloaded.Credentials.GoogleApiKey);
+        Assert.Equal("shodan-key", reloaded.Credentials.ShodanApiKey);
+        Assert.True(reloaded.Credentials.HasGoogleApi);
+        Assert.True(reloaded.Credentials.HasShodan);
+        Assert.False(reloaded.Credentials.HasBingApi);
+    }
+
+    [AvaloniaFact]
+    public async Task ApiEnginesAppearOnlyWhenKeysAreConfigured()
+    {
+        var (vm, _, _, _) = Create();
+        await vm.InitializeAsync();
+        Assert.DoesNotContain(vm.DocumentsPanel.Engines, e => e.Name == "Google API");
+
+        vm.Credentials.GoogleApiKey = "k";
+        vm.Credentials.GoogleCx = "cx";
+        vm.RefreshSearchEngines();
+        Assert.Contains(vm.DocumentsPanel.Engines, e => e.Name == "Google API");
+    }
+
+    [AvaloniaFact]
     public async Task DocumentAnalysisProjectImportsAFolderWithoutADomain()
     {
         var (vm, dialogs, _, _) = Create();
@@ -163,12 +198,16 @@ public sealed class AppTests : IDisposable
         vm.ProjectPanel.Name = "Render";
         await vm.ProjectPanel.SubmitCommand.ExecuteAsync(null);
 
+        vm.ShowOptionsCommand.Execute(null);
+        var options = vm.CurrentPanel;
+
         var expected = new (object Panel, Type View)[]
         {
             (vm.ProjectPanel, typeof(ProjectPanelView)),
             (vm.DocumentsPanel, typeof(DocumentsPanelView)),
             (vm.SummaryPanel, typeof(SummaryPanelView)),
             (vm.DomainsPanel, typeof(DomainsPanelView)),
+            (options!, typeof(OptionsPanelView)),
         };
         foreach ((object panel, Type view) in expected)
         {
@@ -179,7 +218,7 @@ public sealed class AppTests : IDisposable
             Control shown = Assert.Single(window.GetVisualDescendants().OfType<Control>(), c => c.GetType() == view);
             Assert.True(shown.Bounds.Width > 0 && shown.Bounds.Height > 0, view.Name + " has no size");
         }
-        Assert.Equal("Render - FOCA Open Source", window.Title);
+        Assert.Equal("Render - FOCA Next", window.Title);
         window.Close();
     }
 }

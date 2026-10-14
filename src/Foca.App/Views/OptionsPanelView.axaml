@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Foca.App.ViewModels"
+             x:Class="Foca.App.Views.OptionsPanelView"
+             x:DataType="vm:OptionsPanelViewModel">
+  <ScrollViewer>
+    <StackPanel MaxWidth="640" HorizontalAlignment="Left" Margin="12" Spacing="12">
+      <TextBlock Text="Options" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock TextWrapping="Wrap" Opacity="0.8"
+                 Text="API keys for optional services. They are stored encrypted in your user profile. The free web engines (Bing, DuckDuckGo) and the Internet Archive need no key." />
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Google Programmable Search" FontWeight="SemiBold" />
+          <TextBlock Text="API key" Classes="field" />
+          <TextBox Text="{Binding GoogleApiKey}" PasswordChar="•" />
+          <TextBlock Text="Search engine id (cx)" Classes="field" />
+          <TextBox Text="{Binding GoogleCx}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Bing Search API" FontWeight="SemiBold" />
+          <TextBlock TextWrapping="Wrap" Opacity="0.7" FontSize="12"
+                     Text="Microsoft retired the Bing Search APIs in August 2025; this is kept for existing keys only." />
+          <TextBlock Text="API key" Classes="field" />
+          <TextBox Text="{Binding BingApiKey}" PasswordChar="•" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Shodan" FontWeight="SemiBold" />
+          <TextBlock Text="API key" Classes="field" />
+          <TextBox Text="{Binding ShodanApiKey}" PasswordChar="•" />
+        </StackPanel>
+      </Border>
+
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Save" Command="{Binding SaveCommand}" Classes="accent" MinWidth="100" />
+        <Button Content="Close" Command="{Binding CloseCommand}" MinWidth="100" />
+        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Foreground="#2E7D32" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
