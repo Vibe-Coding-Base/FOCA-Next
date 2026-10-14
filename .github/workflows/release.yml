@@ -23,8 +23,8 @@ jobs:
             runtimes: osx-x64,osx-arm64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -44,7 +44,7 @@ jobs:
         run: Move-Item artifacts/SHA256SUMS "artifacts/SHA256SUMS-${{ matrix.os }}"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packages-${{ matrix.os }}
           path: |
@@ -57,14 +57,14 @@ jobs:
     needs: package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
       - name: Combine checksums
         run: cat artifacts/SHA256SUMS-* > artifacts/SHA256SUMS 2>/dev/null || true
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
