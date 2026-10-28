@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Applications">
-    <PackageVersion Include="System.CommandLine" Version="2.0.13" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.14" />
     <PackageVersion Include="Avalonia" Version="11.3.22" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.22" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.22" />
